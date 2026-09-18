@@ -1,0 +1,90 @@
+/* =========================================================
+   TASKS — 1440px laptop
+   ========================================================= */
+
+.cleanup-panel {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+.cleanup-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #ede9fe;
+  color: #6d28d9;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.cleanup-body { flex: 1; min-width: 0; }
+.cleanup-body h3 {
+  margin: 0 0 4px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+}
+.cleanup-body p {
+  font-size: 11.5px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+.cleanup-actions { display: flex; gap: 8px; }
+.cleanup-side { width: 180px; flex-shrink: 0; }
+
+/* ---------- KANBAN ---------- */
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.kanban-col {
+  border-radius: 12px;
+  padding: 12px;
+  min-height: 240px;
+}
+.kanban-pink   { background: #fce7f3; }
+.kanban-purple { background: #ede9fe; }
+.kanban-green  { background: #dcfce7; }
+
+.kanban-head {
+  font-weight: 700;
+  font-size: 12px;
+  color: #111827;
+  margin-bottom: 10px;
+}
+.kanban-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kanban-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 11.5px;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+.kanban-card input[type="checkbox"] {
+  accent-color: #7c3aed;
+  flex-shrink: 0;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1100px) {
+  .kanban { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .kanban { grid-template-columns: 1fr; }
+  .cleanup-panel { flex-direction: column; }
+  .cleanup-side { width: 100%; }
+}

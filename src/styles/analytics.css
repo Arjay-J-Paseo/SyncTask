@@ -1,0 +1,129 @@
+/* =========================================================
+   ANALYTICS — 1440px laptop
+   ========================================================= */
+
+.analytics-row-1 {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 12px;
+}
+.analytics-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.analytics-row-3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+/* ---------- CHART ---------- */
+.mini-chart {
+  width: 100%;
+  height: 130px;
+  background: #fafaff;
+  border-radius: 8px;
+  display: block;
+}
+
+/* ---------- BAR LIST ---------- */
+.bar-list { list-style: none; margin: 0; padding: 0; }
+.bar-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 11.5px;
+}
+.bar-name { width: 50px; color: #374151; }
+.bar-track {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a78bfa, #7c3aed);
+  border-radius: 999px;
+}
+.bar-value {
+  width: 18px;
+  text-align: right;
+  color: #6b7280;
+  font-size: 10.5px;
+}
+
+/* ---------- CALENDAR ---------- */
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  font-size: 10.5px;
+  text-align: center;
+}
+.cal-head {
+  color: #9ca3af;
+  padding: 4px 0;
+  font-weight: 500;
+}
+.cal-cell {
+  padding: 6px 0;
+  border-radius: 6px;
+  color: #374151;
+}
+.cal-cell.active {
+  background: #7c3aed;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---------- EMPTY STATES ---------- */
+.health-placeholder,
+.files-empty {
+  padding: 28px 0;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ---------- INSIGHTS ---------- */
+.insight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.insight {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.insight-body .stat-value { font-size: 15px; }
+.insight-body .stat-label { font-size: 11px; }
+.insight-body .stat-sub   { font-size: 10px; }
+
+/* ---------- KEEP PANEL ---------- */
+.keep-panel h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+.keep-panel p {
+  font-size: 11.5px;
+  color: #6b7280;
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1200px) {
+  .analytics-row-1 { grid-template-columns: 1fr 1fr; }
+  .analytics-row-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .analytics-row-1,
+  .analytics-row-2 { grid-template-columns: 1fr; }
+}

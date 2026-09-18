@@ -1,0 +1,90 @@
+/* =========================================================
+   VIBE CHECK — 1440px laptop
+   ========================================================= */
+
+.vibe-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 12px;
+}
+.vibe-row h3 {
+  margin: 0 0 4px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+}
+.vibe-sub { font-size: 11.5px; color: #6b7280; margin: 0 0 14px; }
+
+/* ---------- MOOD PICKER ---------- */
+.mood-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.mood {
+  flex: 1;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: 0.15s;
+}
+.mood:hover { border-color: #a78bfa; }
+.mood.selected {
+  border-color: #7c3aed;
+  background: #faf7ff;
+}
+.mood-emoji { font-size: 24px; line-height: 1; }
+.mood-label { font-size: 10.5px; color: #6b7280; font-weight: 500; }
+.mood.selected .mood-label { color: #6d28d9; font-weight: 600; }
+
+/* ---------- TEXTAREA ---------- */
+.vibe-textarea {
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 12px;
+  resize: vertical;
+  margin-bottom: 12px;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.vibe-textarea:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+}
+
+.vibe-actions { display: flex; gap: 8px; }
+
+/* ---------- FEEDBACK LIST ---------- */
+.feedback-list { list-style: none; margin: 0; padding: 0; }
+.feedback-list li {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f3ff;
+  font-size: 11.5px;
+}
+.feedback-list li:last-child { border-bottom: 0; }
+.feedback-name {
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: #111827;
+  font-size: 12px;
+}
+.feedback-list .muted { color: #6b7280; line-height: 1.45; }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1000px) {
+  .vibe-row { grid-template-columns: 1fr; }
+}
