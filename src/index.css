@@ -2267,6 +2267,20 @@ textarea:focus-visible {
   margin-bottom: 22px;
 }
 
+.file-preview-image-media {
+  height: min(55vh, 480px);
+  min-height: 180px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.file-preview-image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 .file-preview-placeholder {
   text-align: center;
 }

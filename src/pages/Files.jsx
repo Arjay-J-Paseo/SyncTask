@@ -10,6 +10,11 @@ import { formatBytes, formatRelative } from '../utils/format';
 import { describeSupabaseError } from '../utils/errors';
 import './Files.css';
 
+function isImageFile(file) {
+  return file?.mime_type?.startsWith('image/')
+    || /\.(png|jpe?g|gif|webp)$/i.test(file?.file_name || '');
+}
+
 export default function Files() {
   const { push } = useToast();
   const {
@@ -28,13 +33,55 @@ export default function Files() {
   const [deletingFile, setDeletingFile] = useState(false);
   const [downloadingFile, setDownloadingFile] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState('');
   const [fileToDelete, setFileToDelete] = useState(null);
   const inputRef = useRef(null);
   const downloadLock = useRef(false);
+  const previewRequest = useRef(0);
 
   const usedBytes = files.reduce((sum, f) => sum + (f.size_bytes || 0), 0);
   const limitBytes = workspace?.storage_limit_bytes || 1073741824;
   const pct = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
+
+  async function openPreview(file) {
+    const requestId = ++previewRequest.current;
+    setPreviewFile(file);
+    setPreviewUrl('');
+    setPreviewError('');
+    setPreviewLoading(false);
+
+    if (!isImageFile(file)) return;
+    if (!file.storage_path) {
+      setPreviewError('This image is missing its Storage path.');
+      return;
+    }
+
+    setPreviewLoading(true);
+    try {
+      const url = await getFileUrl(file.storage_path);
+      if (requestId === previewRequest.current) setPreviewUrl(url);
+    } catch (err) {
+      console.error('[files] image preview URL failed:', describeSupabaseError(err), err);
+      if (requestId === previewRequest.current) setPreviewError(describeSupabaseError(err));
+    } finally {
+      if (requestId === previewRequest.current) setPreviewLoading(false);
+    }
+  }
+
+  function closePreview() {
+    previewRequest.current++;
+    setPreviewFile(null);
+    setPreviewUrl('');
+    setPreviewError('');
+    setPreviewLoading(false);
+  }
+
+  function handleImageLoadError() {
+    setPreviewUrl('');
+    setPreviewError('The image could not be loaded. Close the preview and try again.');
+  }
 
   async function handleFiles(fileList) {
     const arr = Array.from(fileList);
@@ -81,7 +128,7 @@ export default function Files() {
       });
       push('File deleted', 'success');
       setFileToDelete(null);
-      setPreviewFile(null);
+      closePreview();
     } catch (err) {
       console.error('[files] delete failed:', describeSupabaseError(err), err);
       push(describeSupabaseError(err), 'error');
@@ -231,7 +278,7 @@ export default function Files() {
                 <div
                   key={f.id}
                   className="files-row files-row-clickable"
-                  onClick={() => setPreviewFile(f)}
+                  onClick={() => openPreview(f)}
                 >
                   <div className="files-icon">
                     <IconFile style={{ width: 18, height: 18 }} />
@@ -261,10 +308,15 @@ export default function Files() {
       <FilePreviewModal
         open={!!previewFile}
         file={previewFile}
-        onClose={() => setPreviewFile(null)}
+        onClose={closePreview}
         onDelete={(f) => setFileToDelete(f)}
         onDownload={handleDownload}
         downloading={downloadingFile}
+        isImage={isImageFile(previewFile)}
+        imageUrl={previewUrl}
+        imageLoading={previewLoading}
+        imageError={previewError}
+        onImageError={handleImageLoadError}
       />
 
       <ConfirmModal

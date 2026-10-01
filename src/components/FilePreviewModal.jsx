@@ -3,10 +3,21 @@ import Button from './ui/Button';
 import { IconFile, IconTrash, IconUpload } from './icons';
 import { formatBytes, formatRelative } from '../utils/format';
 
-export default function FilePreviewModal({ open, file, onClose, onDelete, onDownload, downloading }) {
+export default function FilePreviewModal({
+  open,
+  file,
+  onClose,
+  onDelete,
+  onDownload,
+  downloading,
+  isImage,
+  imageUrl,
+  imageLoading,
+  imageError,
+  onImageError
+}) {
   if (!file) return null;
 
-  const isImage = file.mime_type && file.mime_type.startsWith('image/');
   const isPDF = file.mime_type === 'application/pdf';
 
   return (
@@ -26,13 +37,25 @@ export default function FilePreviewModal({ open, file, onClose, onDelete, onDown
 
         <div className="file-preview-body">
           {isImage ? (
-            <div className="file-preview-media">
-              <div className="file-preview-placeholder">
-                <IconFile style={{ width: 48, height: 48, color: 'var(--accent)' }} />
-                <div className="file-preview-placeholder-text">
-                  Image preview
+            <div className="file-preview-media file-preview-image-media">
+              {imageError ? (
+                <div className="file-preview-placeholder" role="alert">
+                  <IconFile style={{ width: 48, height: 48, color: 'var(--accent)' }} />
+                  <div className="file-preview-placeholder-text">{imageError}</div>
                 </div>
-              </div>
+              ) : imageLoading || !imageUrl ? (
+                <div className="file-preview-placeholder" aria-live="polite">
+                  <IconFile style={{ width: 48, height: 48, color: 'var(--accent)' }} />
+                  <div className="file-preview-placeholder-text">Loading image preview...</div>
+                </div>
+              ) : (
+                <img
+                  className="file-preview-image"
+                  src={imageUrl}
+                  alt={file.file_name}
+                  onError={onImageError}
+                />
+              )}
             </div>
           ) : isPDF ? (
             <div className="file-preview-media">
