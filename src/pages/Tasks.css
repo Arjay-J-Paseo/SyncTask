@@ -1,0 +1,373 @@
+/* ============================================================
+   TASKS PAGE — responsive on all devices
+   ============================================================ */
+
+.tasks-or {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 16px);
+  margin: clamp(24px, 3vw, 30px) auto clamp(18px, 2.4vw, 22px);
+  max-width: 640px;
+  color: var(--text-3);
+  font-size: clamp(12.5px, 1vw, 13.5px);
+}
+.tasks-or-line { flex: 1; height: 1px; background: var(--border); }
+
+.tasks-explain {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(12px, 1.6vw, 16px);
+  max-width: 700px;
+  margin: 0 auto;
+}
+.tasks-explain-card {
+  display: flex;
+  gap: clamp(10px, 1.2vw, 14px);
+  padding: clamp(14px, 1.8vw, 18px) clamp(16px, 2vw, 20px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.tasks-explain-card:hover {
+  border-color: #d0c3ec;
+  box-shadow: 0 8px 20px rgba(20, 20, 25, 0.06);
+  transform: translateY(-2px);
+}
+.tasks-explain-title {
+  font-weight: 700;
+  font-size: clamp(13.5px, 1.1vw, 15px);
+}
+.tasks-explain-sub {
+  color: var(--text-2);
+  font-size: clamp(12px, 1vw, 13px);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   TASK LIST
+   ============================================================ */
+.task-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 220px;
+  gap: clamp(16px, 2vw, 20px);
+  padding: clamp(18px, 2.2vw, 22px) clamp(18px, 2.4vw, 24px);
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+  transition: background-color 0.15s ease;
+}
+.task-row:last-child { border-bottom: none; }
+.task-row:hover { background-color: #fafafa; }
+
+.task-main { min-width: 0; }
+.task-title {
+  font-weight: 700;
+  font-size: clamp(14px, 1.15vw, 15.5px);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.task-desc {
+  color: var(--text-2);
+  font-size: clamp(12.5px, 1vw, 13.5px);
+  margin-top: 4px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.task-meta {
+  display: flex;
+  gap: clamp(20px, 2.6vw, 32px);
+  margin-top: clamp(12px, 1.4vw, 14px);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.task-meta-label {
+  font-size: clamp(11.5px, 0.9vw, 12.5px);
+  color: var(--text-2);
+}
+.task-meta-value {
+  font-size: clamp(12.5px, 1vw, 13.5px);
+  font-weight: 600;
+  margin-top: 2px;
+}
+.task-meta-assignee {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.task-side {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 12px);
+  align-items: flex-end;
+  text-align: right;
+}
+.task-side > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.task-side-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.task-btn {
+  padding: clamp(6px, 0.8vw, 8px) clamp(12px, 1.4vw, 14px);
+  border-radius: 6px;
+  font-size: clamp(11.5px, 0.9vw, 12.5px);
+  font-weight: 700;
+  border: none;
+  background: #dcd0f3;
+  color: #3d2c6b;
+  transition: background 0.15s, transform 0.1s;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+}
+.task-btn:hover { background: #cdbdf0; }
+.task-btn:active { transform: translateY(1px); }
+
+/* ============================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* ---- Large desktop (1600px+): nothing changes, just cap width ---- */
+@media (min-width: 1600px) {
+  .task-row { padding: 24px 28px; }
+}
+
+/* ---- Small laptop / large tablet (901–1100px) ---- */
+@media (max-width: 1100px) {
+  .task-row {
+    grid-template-columns: 32px minmax(0, 1fr) 180px;
+    gap: 18px;
+  }
+}
+
+/* ---- Tablet portrait (701–900px): side column narrows ---- */
+@media (max-width: 900px) {
+  .task-row {
+    grid-template-columns: 32px minmax(0, 1fr) 160px;
+    gap: 16px;
+    padding: 18px 20px;
+  }
+  .task-side-buttons {
+    flex-direction: column;
+  }
+}
+
+/* ---- Mobile landscape / small tablet (601–700px): task-side drops below ---- */
+@media (max-width: 700px) {
+  .tasks-explain {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .task-row {
+    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 14px;
+    padding: 16px 18px;
+  }
+
+  .task-row > .checkbox {
+    grid-column: 1;
+    grid-row: 1;
+    margin-top: 2px;
+  }
+
+  .task-main {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .task-side {
+    grid-column: 2;
+    grid-row: 2;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    text-align: left;
+    margin-top: 4px;
+  }
+  .task-side > div {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .task-side-buttons {
+    flex-direction: row;
+    width: auto;
+    margin-top: 0;
+    margin-left: auto;
+  }
+  .task-btn {
+    width: auto;
+    padding: 8px 16px;
+  }
+
+  .task-meta {
+    gap: 20px;
+  }
+}
+
+/* ---- Mobile portrait (max 600px): everything stacks tighter ---- */
+@media (max-width: 600px) {
+  .task-row {
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 14px;
+  }
+
+  .task-title { font-size: 14.5px; }
+  .task-desc { font-size: 12.5px; }
+
+  .task-meta {
+    gap: 14px;
+    margin-top: 10px;
+  }
+  .task-meta-label { font-size: 11px; }
+  .task-meta-value { font-size: 12.5px; }
+
+  .task-meta-assignee {
+    gap: 8px;
+  }
+
+  .task-side {
+    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .task-side > div {
+    align-items: flex-start;
+  }
+
+  .task-side-buttons {
+    flex-direction: row;
+    width: 100%;
+    gap: 8px;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+  .task-btn {
+    flex: 1;
+    width: auto;
+    padding: 9px 12px;
+    text-align: center;
+  }
+
+  .card-header { padding: 14px 16px; }
+  .card-body { padding: 16px; }
+}
+
+/* ---- Small phone (max 400px): compact ---- */
+@media (max-width: 400px) {
+  .task-row {
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px 12px;
+  }
+
+  .task-title { font-size: 14px; }
+  .task-desc { font-size: 12px; }
+
+  .tasks-explain-card {
+    padding: 12px 14px;
+  }
+  .tasks-explain-title { font-size: 13.5px; }
+  .tasks-explain-sub { font-size: 12px; }
+
+  .task-side {
+    gap: 10px;
+  }
+
+  .task-btn {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .task-row,
+  .task-btn,
+  .tasks-explain-card {
+    transition: none !important;
+  }
+}
+/* Clickable task row */
+.task-row-clickable {
+  cursor: pointer;
+}
+.task-row-clickable:hover {
+  background-color: #fafafa;
+}
+/* ===== Task filters ===== */
+.task-filter-count {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-2);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f0f0f3;
+}
+
+.task-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  background: #fafafa;
+}
+
+.task-filter {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.task-filter:hover { border-color: var(--accent); }
+.task-filter:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124, 92, 224, 0.15); }
+
+.task-filter-clear {
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 8px;
+}
+.task-filter-clear:hover { background: var(--lavender-soft); }
+
+@media (max-width: 700px) {
+  .task-filters {
+    padding: 12px 16px;
+    gap: 6px;
+  }
+  .task-filter {
+    font-size: 12.5px;
+    padding: 6px 10px;
+    flex: 1;
+    min-width: 130px;
+  }
+}

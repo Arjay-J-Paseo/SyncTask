@@ -1,0 +1,104 @@
+/* ===== Task Detail Modal ===== */
+.task-detail-modal {
+  display: flex;
+  flex-direction: column;
+}
+
+.task-detail-header {
+  padding: 22px 28px 6px;
+}
+.task-detail-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+
+.task-detail-body {
+  padding: 16px 28px 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.task-detail-body .field {
+  margin-bottom: 16px;
+}
+
+.task-detail-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.task-detail-2col .field {
+  margin-bottom: 0;
+}
+
+.task-detail-field {
+  margin-bottom: 4px;
+}
+
+/* Status pills */
+.task-status-pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.task-status-pill {
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  text-align: center;
+}
+.task-status-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.task-status-pill.active {
+  background: var(--lavender-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Footer with actions */
+.task-detail-footer {
+  padding: 16px 28px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  background: #fafafa;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .task-detail-header { padding: 20px 20px 4px; }
+  .task-detail-body { padding: 12px 20px 4px; }
+  .task-detail-2col { grid-template-columns: 1fr; gap: 12px; }
+  .task-detail-footer {
+    padding: 14px 20px 18px;
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .task-detail-footer > .row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .task-detail-footer .btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-status-pill { transition: none !important; }
+}

@@ -1,0 +1,853 @@
+/* ============================================================
+   LANDING V2 — responsive on all devices
+   ============================================================ */
+
+.landing-v2 {
+  --ink: #281e35;
+  --muted: #736c7e;
+  --purple: #7939ce;
+  --lavender: #f3edfd;
+  --line: #ebe6f0;
+  --white: #ffffff;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-synthesis: none;
+  color: var(--ink);
+  background: var(--white);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.landing-v2 *,
+.landing-v2 *::before,
+.landing-v2 *::after {
+  box-sizing: border-box;
+}
+
+.landing-v2 a {
+  color: inherit;
+  text-decoration: none;
+}
+.landing-v2 a:hover { color: var(--purple); }
+
+.landing-v2 button {
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.landing-v2 button:active,
+.landing-v2 .button:active {
+  transform: translateY(1px);
+}
+
+.landing-v2 :focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 4px;
+}
+
+.landing-v2 h1,
+.landing-v2 h2,
+.landing-v2 h3,
+.landing-v2 p {
+  margin: 0;
+}
+.landing-v2 h1,
+.landing-v2 h2,
+.landing-v2 h3 {
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* Fluid typography that scales with viewport */
+.landing-v2 h1 {
+  margin: clamp(16px, 2vw, 22px) 0;
+  font-size: clamp(32px, 5vw, 60px);
+  letter-spacing: clamp(-2px, -0.06vw, -1px);
+}
+.landing-v2 h2 {
+  font-size: clamp(24px, 3.2vw, 36px);
+  letter-spacing: -0.6px;
+}
+.landing-v2 h3 {
+  font-size: clamp(16px, 1.4vw, 20px);
+}
+
+/* Layout helpers — fluid width */
+.landing-v2 .wrap {
+  width: min(1200px, 90%);
+  margin-left: auto;
+  margin-right: auto;
+}
+.landing-v2 .lavender { background: var(--lavender); }
+
+.landing-v2 .eyebrow {
+  margin-bottom: clamp(10px, 1.4vw, 16px);
+  color: var(--purple);
+  font-size: clamp(10px, 0.9vw, 12px);
+  font-weight: 700;
+  letter-spacing: clamp(1px, 0.12vw, 1.4px);
+  text-transform: uppercase;
+}
+.landing-v2 .intro {
+  max-width: 460px;
+  margin: clamp(14px, 1.6vw, 18px) 0 clamp(20px, 2.4vw, 30px);
+  color: var(--muted);
+  font-size: clamp(14px, 1.15vw, 16px);
+  line-height: 1.65;
+}
+.landing-v2 .small { font-size: clamp(11px, 0.95vw, 13px); }
+.landing-v2 .muted { color: var(--muted); }
+.landing-v2 .fine-print {
+  margin-top: clamp(14px, 1.6vw, 18px);
+  color: var(--muted);
+  font-size: clamp(11px, 0.95vw, 13px);
+}
+.landing-v2 .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(10px, 1.2vw, 14px);
+}
+
+/* Buttons — fluid */
+.landing-v2 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: clamp(42px, 3.4vw, 46px);
+  padding: clamp(10px, 1vw, 13px) clamp(20px, 2.2vw, 30px);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--purple);
+  color: var(--white);
+  font-size: clamp(13px, 1.05vw, 15px);
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+  font-family: inherit;
+  letter-spacing: 0.1px;
+}
+.landing-v2 .button:hover {
+  background: #6326b3;
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(121, 57, 206, 0.28);
+}
+.landing-v2 .button.white {
+  background: var(--white);
+  color: var(--ink);
+}
+.landing-v2 .button.outline {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+.landing-v2 .button.white:hover,
+.landing-v2 .button.outline:hover {
+  background: #e8ddf9;
+  color: var(--ink);
+  box-shadow: 0 8px 18px rgba(121, 57, 206, 0.15);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.landing-v2 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(20px, 2.4vw, 32px);
+  min-height: clamp(76px, 6vw, 92px);
+}
+.landing-v2 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(18px, 1.6vw, 22px);
+  font-weight: 750;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.landing-v2 .logo img {
+  display: block;
+  flex-shrink: 0;
+  width: clamp(32px, 3vw, 40px);
+  height: clamp(32px, 3vw, 40px);
+  object-fit: contain;
+  transition: transform 0.4s ease;
+}
+.landing-v2 .logo:hover img {
+  transform: scale(1.08) rotate(-4deg);
+}
+.landing-v2 .logo span {
+  flex-shrink: 0;
+  font-size: clamp(18px, 1.6vw, 22px);
+  line-height: 1;
+  color: var(--ink);
+  font-weight: 750;
+}
+
+.landing-v2 nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 2.8vw, 38px);
+  font-size: clamp(13px, 1.05vw, 15px);
+}
+.landing-v2 nav a {
+  position: relative;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.landing-v2 nav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  height: 2px;
+  width: 0;
+  background: var(--purple);
+  border-radius: 2px;
+  transition: width 0.25s ease;
+}
+.landing-v2 nav a:hover::after {
+  width: 100%;
+}
+.landing-v2 nav .button::after { display: none; }
+
+.landing-v2 .menu-toggle { display: none; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.landing-v2 .hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(40px, 6vw, 80px);
+  padding-block: clamp(48px, 6vw, 84px);
+}
+
+/* Hero stagger animation */
+.landing-v2 .hero-text > * {
+  opacity: 0;
+  animation: lv2FadeUp 0.55s ease-out forwards;
+}
+.landing-v2 .hero-text > *:nth-child(1) { animation-delay: 0.05s; }
+.landing-v2 .hero-text > *:nth-child(2) { animation-delay: 0.15s; }
+.landing-v2 .hero-text > *:nth-child(3) { animation-delay: 0.25s; }
+.landing-v2 .hero-text > *:nth-child(4) { animation-delay: 0.35s; }
+.landing-v2 .hero-text > *:nth-child(5) { animation-delay: 0.45s; }
+
+.landing-v2 .hero-card {
+  opacity: 0;
+  animation: lv2FadeUp 0.7s 0.2s ease-out forwards;
+}
+
+@keyframes lv2FadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll reveal */
+.landing-v2 .lv2-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.landing-v2 .lv2-reveal.lv2-reveal-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Project card */
+.landing-v2 .project-card,
+.landing-v2 .chart-card {
+  padding: clamp(22px, 2.4vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+}
+.landing-v2 .hero-card {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.landing-v2 .hero-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px rgba(121, 57, 206, 0.12);
+}
+.landing-v2 .project-card .eyebrow {
+  margin-bottom: 6px;
+  font-size: clamp(10px, 0.9vw, 11px);
+}
+.landing-v2 .project-card h2 { font-size: clamp(20px, 2vw, 28px); }
+
+.landing-v2 .stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: clamp(18px, 2vw, 24px) 0;
+}
+.landing-v2 .stats > div {
+  padding: clamp(10px, 1.2vw, 14px) clamp(12px, 1.4vw, 16px);
+  border-radius: 6px;
+  background: var(--lavender);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.landing-v2 .hero-card:hover .stats > div {
+  background: #e8ddf9;
+}
+.landing-v2 .stats strong {
+  display: block;
+  font-size: clamp(18px, 1.9vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+.landing-v2 .stats span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: clamp(11px, 0.9vw, 12px);
+}
+
+.landing-v2 .task-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.landing-v2 .task-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: clamp(9px, 1vw, 12px) 0;
+  border-top: 1px solid var(--line);
+  font-size: clamp(12.5px, 1vw, 14px);
+  transition: transform 0.15s ease;
+}
+.landing-v2 .task-list li:hover {
+  transform: translateX(3px);
+}
+.landing-v2 .task-list span {
+  min-width: 110px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: var(--lavender);
+  color: var(--purple);
+  font-size: clamp(10.5px, 0.85vw, 11.5px);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ============================================================
+   FEATURES
+   ============================================================ */
+.landing-v2 .features {
+  padding-block: clamp(48px, 6vw, 84px);
+}
+.landing-v2 .features h2 {
+  font-size: clamp(24px, 3vw, 34px);
+}
+
+.landing-v2 .feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(24px, 4vw, 48px);
+  margin-top: clamp(32px, 4.6vw, 56px);
+}
+.landing-v2 .feature-grid article {
+  transition: transform 0.25s ease;
+}
+.landing-v2 .feature-grid article:hover {
+  transform: translateY(-4px);
+}
+.landing-v2 .accent-line {
+  width: clamp(32px, 3.4vw, 42px);
+  height: 4px;
+  margin-bottom: clamp(16px, 1.8vw, 22px);
+  background: var(--purple);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+.landing-v2 .feature-grid article:hover .accent-line {
+  width: clamp(48px, 5.4vw, 68px);
+}
+.landing-v2 .feature-grid p {
+  margin-top: clamp(10px, 1.2vw, 14px);
+  color: var(--muted);
+  font-size: clamp(13.5px, 1.05vw, 15px);
+  line-height: 1.6;
+}
+.landing-v2 .feature-grid h3 {
+  font-size: clamp(16px, 1.4vw, 19px);
+  font-weight: 700;
+}
+
+/* ============================================================
+   ANALYTICS
+   ============================================================ */
+.landing-v2 .analytics-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: clamp(40px, 6vw, 80px);
+  padding-block: clamp(48px, 6vw, 72px);
+}
+.landing-v2 .chart-card {
+  margin: 0;
+  padding: clamp(22px, 2.4vw, 32px) clamp(22px, 2.4vw, 32px) clamp(30px, 3.4vw, 40px);
+}
+.landing-v2 .chart-card h3 { font-size: clamp(16px, 1.3vw, 18px); }
+.landing-v2 .chart-card figcaption p { margin-top: 8px; }
+
+.landing-v2 .chart {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(10px, 1.6vw, 22px);
+  height: clamp(140px, 15vw, 200px);
+  margin-top: 20px;
+  padding: clamp(20px, 2.4vw, 28px) clamp(14px, 1.6vw, 24px) clamp(20px, 2.2vw, 26px);
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0,
+    transparent 39px,
+    #f6f4f9 39px,
+    #f6f4f9 40px
+  );
+}
+.landing-v2 .chart > div {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: var(--value);
+}
+.landing-v2 .chart i {
+  display: block;
+  height: 100%;
+  border-radius: 3px 3px 0 0;
+  background: #ccafea;
+  transform-origin: bottom;
+  animation: lv2GrowBar 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: background 0.2s ease;
+}
+.landing-v2 .chart > div:nth-child(1) i { animation-delay: 0.05s; }
+.landing-v2 .chart > div:nth-child(2) i { animation-delay: 0.12s; }
+.landing-v2 .chart > div:nth-child(3) i { animation-delay: 0.19s; }
+.landing-v2 .chart > div:nth-child(4) i { animation-delay: 0.26s; }
+.landing-v2 .chart > div:nth-child(5) i { animation-delay: 0.33s; }
+.landing-v2 .chart > div:nth-child(6) i { animation-delay: 0.40s; }
+.landing-v2 .chart > div:nth-child(7) i { animation-delay: 0.47s; }
+
+@keyframes lv2GrowBar {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+.landing-v2 .chart .highlight i { background: var(--purple); }
+.landing-v2 .chart > div:hover i {
+  background: var(--purple);
+}
+
+.landing-v2 .chart span {
+  position: absolute;
+  top: -22px;
+  width: 100%;
+  color: var(--muted);
+  font-size: clamp(10px, 0.9vw, 12px);
+  font-weight: 600;
+  text-align: center;
+}
+.landing-v2 .chart small {
+  position: absolute;
+  bottom: -28px;
+  width: 100%;
+  color: var(--muted);
+  font-size: clamp(10px, 0.9vw, 12px);
+  text-align: center;
+}
+
+.landing-v2 .insights {
+  max-width: 420px;
+  margin-top: 20px;
+  font-size: clamp(13.5px, 1.05vw, 15px);
+  line-height: 1.6;
+  color: var(--ink);
+  animation: lv2FadeUp 0.35s ease-out;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+}
+
+/* ============================================================
+   PRICING
+   ============================================================ */
+.landing-v2 .pricing {
+  padding-block: clamp(48px, 6vw, 84px);
+}
+.landing-v2 .pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(16px, 2vw, 26px);
+  margin-top: clamp(28px, 3.4vw, 40px);
+}
+.landing-v2 .plan {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 2.4vw, 32px) clamp(20px, 2.2vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.landing-v2 .plan:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 36px rgba(20, 20, 25, 0.08);
+  border-color: #d0c3ec;
+}
+.landing-v2 .plan h3 {
+  font-size: clamp(18px, 1.6vw, 22px);
+  font-weight: 700;
+}
+.landing-v2 .plan p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: clamp(13px, 1vw, 14px);
+}
+.landing-v2 .price {
+  margin: clamp(14px, 1.6vw, 18px) 0;
+  font-size: clamp(26px, 2.6vw, 34px);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.6px;
+}
+.landing-v2 .price span {
+  font-size: clamp(16px, 1.6vw, 22px);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.landing-v2 .plan ul {
+  margin: 8px 0 clamp(20px, 2.2vw, 26px);
+  padding: 0;
+  font-size: clamp(13px, 1vw, 14px);
+  line-height: 2;
+  list-style: none;
+  color: var(--ink);
+}
+.landing-v2 .plan li::before {
+  content: "✓";
+  margin-right: 10px;
+  color: var(--purple);
+  font-weight: 700;
+}
+.landing-v2 .plan .button {
+  width: 100%;
+  margin-top: auto;
+  font-size: clamp(13px, 1.05vw, 14.5px);
+}
+.landing-v2 .plan.featured {
+  border-color: #bb91ed;
+  background: var(--lavender);
+  box-shadow: 0 0 0 1px #e4d1fc;
+}
+.landing-v2 .plan.featured:hover {
+  box-shadow: 0 22px 44px rgba(121, 57, 206, 0.20);
+}
+
+/* ============================================================
+   CTA
+   ============================================================ */
+.landing-v2 .cta {
+  padding-block: clamp(48px, 6vw, 72px);
+  background: #23182f;
+  color: var(--white);
+}
+.landing-v2 .cta h2 {
+  font-size: clamp(26px, 3.2vw, 40px);
+  color: var(--white);
+  letter-spacing: -0.8px;
+}
+.landing-v2 .cta p {
+  margin: clamp(10px, 1.2vw, 14px) 0 clamp(20px, 2.4vw, 30px);
+  color: #c3b9ce;
+  font-size: clamp(14px, 1.15vw, 16px);
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.landing-v2 footer {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 4vw, 65px);
+  min-height: clamp(88px, 8vw, 108px);
+}
+.landing-v2 footer p {
+  color: var(--muted);
+  font-size: clamp(12px, 1vw, 14px);
+}
+.landing-v2 footer > .button {
+  min-height: 40px;
+  margin-left: auto;
+  font-size: clamp(11.5px, 0.95vw, 13px);
+  padding: 10px 22px;
+}
+
+/* ============================================================
+   DIALOG
+   ============================================================ */
+.landing-v2 .plan-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #23182f99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  animation: lv2FadeIn 0.2s ease-out;
+}
+@keyframes lv2FadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.landing-v2 .plan-dialog {
+  position: relative;
+  width: min(500px, 92vw);
+  padding: clamp(28px, 3.4vw, 44px) clamp(24px, 3vw, 40px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--white);
+  color: var(--ink);
+  animation: lv2DialogIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes lv2DialogIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.landing-v2 .plan-dialog h2 {
+  font-size: clamp(20px, 2vw, 26px);
+  margin-bottom: 4px;
+}
+.landing-v2 .plan-dialog > p:not(.eyebrow) {
+  margin: clamp(14px, 1.6vw, 18px) 0 clamp(20px, 2.4vw, 28px);
+  color: var(--muted);
+  font-size: clamp(13px, 1.1vw, 15px);
+  line-height: 1.6;
+}
+
+.landing-v2 .plan-dialog .close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: clamp(24px, 2.4vw, 30px);
+  line-height: 1;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+.landing-v2 .plan-dialog .close:hover { color: var(--purple); }
+
+/* ============================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* ---- Large desktop: cap widths, more breathing room ---- */
+@media (min-width: 1600px) {
+  .landing-v2 .wrap { width: min(1280px, 88%); }
+  .landing-v2 .hero-grid { padding-block: 96px; }
+}
+
+/* ---- Small laptop / large tablet (901–1100px) ---- */
+@media (max-width: 1100px) {
+  .landing-v2 .hero-grid { gap: 48px; }
+  .landing-v2 .analytics-grid { gap: 48px; }
+  .landing-v2 .feature-grid { gap: 32px; }
+}
+
+/* ---- Tablet (701–900px): stack grids, shrink nav ---- */
+@media (max-width: 900px) {
+  .landing-v2 .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .landing-v2 .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .landing-v2 .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-top: 36px;
+  }
+  .landing-v2 .pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .landing-v2 .feature-grid p { max-width: 520px; }
+
+  .landing-v2 nav { gap: 22px; }
+  .landing-v2 .chart { gap: 14px; }
+  .landing-v2 .plan { padding: 24px; }
+
+  .landing-v2 footer {
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    padding-block: 32px;
+  }
+  .landing-v2 footer > .button {
+    margin-left: 0;
+  }
+}
+
+/* ---- Mobile (max 700px): hamburger menu + stacked layouts ---- */
+@media (max-width: 700px) {
+  .landing-v2 .header {
+    flex-wrap: wrap;
+    min-height: 72px;
+    padding-block: 16px;
+  }
+  .landing-v2 .menu-toggle {
+    display: block;
+    padding: 10px 18px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .landing-v2 nav {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    padding-bottom: 8px;
+  }
+  .landing-v2 nav.open { display: flex; }
+  .landing-v2 nav > a {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+  }
+  .landing-v2 nav > a::after { display: none; }
+  .landing-v2 nav .button {
+    margin-top: 12px;
+    min-height: 44px;
+  }
+
+  .landing-v2 .hero-grid h1 {
+    font-size: clamp(30px, 9vw, 42px);
+  }
+  .landing-v2 .project-card h2 {
+    font-size: clamp(18px, 5vw, 24px);
+  }
+  .landing-v2 .task-list li { font-size: 13px; }
+  .landing-v2 .task-list span { min-width: 100px; }
+  .landing-v2 .stats strong { font-size: 20px; }
+
+  .landing-v2 .chart {
+    gap: 10px;
+    height: 160px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .landing-v2 .chart span { font-size: 10px; }
+  .landing-v2 .chart small { font-size: 10px; bottom: -24px; }
+
+  .landing-v2 .features h2,
+  .landing-v2 .pricing h2,
+  .landing-v2 .analytics h2 { font-size: 26px; }
+}
+
+/* ---- Small phone (max 480px) ---- */
+@media (max-width: 480px) {
+  .landing-v2 .wrap { width: 92%; }
+  .landing-v2 .hero-grid {
+    padding-block: 32px;
+  }
+  .landing-v2 .hero-grid h1 {
+    font-size: clamp(26px, 8.5vw, 34px);
+    letter-spacing: -0.8px;
+  }
+  .landing-v2 .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .landing-v2 .actions .button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .landing-v2 .stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .landing-v2 .stats > div {
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .landing-v2 .stats strong { font-size: 18px; }
+  .landing-v2 .stats span { font-size: 10.5px; }
+
+  .landing-v2 .project-card,
+  .landing-v2 .chart-card {
+    padding: 18px 16px;
+  }
+
+  .landing-v2 .task-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .landing-v2 .task-list span {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .landing-v2 .feature-grid { gap: 28px; }
+  .landing-v2 .feature-grid p { font-size: 13.5px; }
+
+  .landing-v2 .plan { padding: 22px 18px; }
+  .landing-v2 .price { font-size: 26px; }
+
+  .landing-v2 .cta h2 { font-size: 24px; }
+
+  .landing-v2 footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding-block: 28px 24px;
+  }
+  .landing-v2 footer > .button { margin-left: 0; }
+
+  .landing-v2 .plan-dialog {
+    padding: 28px 22px;
+  }
+}
+
+/* ---- Extra small phone (max 360px) ---- */
+@media (max-width: 360px) {
+  .landing-v2 .logo span { display: none; }
+  .landing-v2 .header { gap: 12px; }
+  .landing-v2 .hero-grid h1 { font-size: 26px; }
+  .landing-v2 .stats strong { font-size: 16px; }
+  .landing-v2 .chart span,
+  .landing-v2 .chart small { font-size: 9px; }
+  .landing-v2 .button { padding-inline: 16px; }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .landing-v2 *,
+  .landing-v2 *::before,
+  .landing-v2 *::after {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

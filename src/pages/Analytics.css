@@ -1,0 +1,8 @@
+.analytics-donut { display: flex; justify-content: center; margin-top: 4px; }
+
+.analytics-legend {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  margin-top: 24px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}

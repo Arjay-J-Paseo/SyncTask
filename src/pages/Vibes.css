@@ -1,0 +1,226 @@
+/* ============================================================
+   VIBE CHECKS
+   ============================================================ */
+
+/* ===== Layout ===== */
+.vibes-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+}
+
+/* ===== Mood picker ===== */
+.vibes-mood-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin: 18px 0 6px;
+}
+
+.vibes-mood {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 8px;
+  min-height: 100px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.vibes-mood:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.vibes-mood.active {
+  border-color: var(--accent);
+  background: var(--lavender-soft);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(124, 92, 224, 0.18);
+}
+.vibes-mood span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.vibes-mood.active span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ===== Today banner ===== */
+.vibe-today-banner {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  animation: vibeTodayIn 0.35s ease-out;
+}
+@keyframes vibeTodayIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.vibe-today-text {
+  font-size: 13.5px;
+  color: #166534;
+  line-height: 1.4;
+}
+.vibe-today-text strong {
+  color: #14532d;
+  font-weight: 800;
+}
+
+/* ===== Character counter ===== */
+.vibe-char-count {
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* ===== Counter badge in card header ===== */
+.vibe-count-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--lavender-soft);
+}
+
+/* ===== Filter row ===== */
+.vibe-filter-row {
+  display: flex;
+  gap: 6px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--border);
+  background: #fafafa;
+  flex-wrap: wrap;
+}
+.vibe-filter-pill {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.vibe-filter-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.vibe-filter-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ===== Recent check-ins list ===== */
+.vibes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 22px;
+}
+
+.vibes-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.vibes-item-body {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.vibes-item-face {
+  flex-shrink: 0;
+}
+.vibes-item-face svg {
+  width: 34px;
+  height: 34px;
+}
+
+.vibes-item-text {
+  flex: 1;
+  min-width: 0;
+}
+.vibes-item-line {
+  font-size: 13px;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+.vibes-item-time {
+  position: absolute;
+  right: 12px;
+  bottom: 6px;
+  font-size: 11.5px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+/* ===== Empty state ===== */
+.vibes-empty {
+  padding: 40px 20px;
+  text-align: center;
+}
+.vibes-empty-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+  opacity: 0.35;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .vibes-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .vibes-mood-grid { grid-template-columns: repeat(3, 1fr); }
+  .vibes-mood { min-height: 90px; padding: 14px 6px; }
+  .vibes-mood span { font-size: 12px; }
+
+  .vibe-filter-row {
+    padding: 10px 16px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .vibe-filter-pill { white-space: nowrap; }
+
+  .vibes-list { padding: 16px; }
+}
+
+@media (max-width: 380px) {
+  .vibes-mood-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vibes-mood,
+  .vibe-today-banner {
+    transition: none !important;
+    animation: none !important;
+  }
+}

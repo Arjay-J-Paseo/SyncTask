@@ -1,0 +1,120 @@
+.dash-empty {
+  min-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.dash-empty-title {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 18px;
+}
+
+.dash-accent { color: var(--accent); }
+
+.dash-empty-sub {
+  color: var(--text-2);
+  font-size: 17px;
+  max-width: 640px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+.dash-progress {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 20px 0;
+}
+
+.dash-progress-title {
+  font-weight: 700;
+  font-size: 15.5px;
+}
+
+@media (max-width: 768px) {
+  .dash-empty-title { font-size: 34px; }
+  .dash-progress { flex-direction: column; text-align: center; }
+}
+.deadlines-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.deadline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.deadline-item:last-child { border-bottom: none; }
+.deadline-item:hover { background: #fafafa; }
+
+.deadline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.deadline-dot-overdue { background: var(--danger); }
+.deadline-dot-urgent  { background: #f59e0b; }
+.deadline-dot-soon    { background: var(--accent); }
+
+.deadline-body { flex: 1; min-width: 0; }
+.deadline-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.deadline-meta {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.deadline-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+.deadline-badge-high   { background: #fee2e2; color: #991b1b; }
+.deadline-badge-medium { background: #fef3c7; color: #92400e; }
+.deadline-badge-low    { background: #dcfce7; color: #166534; }
+
+.mini-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+.mini-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.mini-item:last-child { border-bottom: none; }
+.mini-item:hover { transform: translateX(3px); }
+.mini-item-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}

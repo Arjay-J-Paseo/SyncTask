@@ -1,0 +1,152 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useWorkspace } from '../context/MockWorkspaceContext';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { supabase } from '../lib/supabase';
+import { describeSupabaseError } from '../utils/errors';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Textarea from '../components/ui/Textarea';
+import Select from '../components/ui/Select';
+import Avatar from '../components/ui/Avatar';
+import { PRIORITIES } from '../utils/constants';
+import './Assign.css';
+
+export default function AssignManually() {
+  const navigate = useNavigate();
+  const { push } = useToast();
+  const { user } = useAuth();
+  const { workspace, members, refresh } = useWorkspace();
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [group, setGroup] = useState('Product Design');
+  const [dueDate, setDueDate] = useState('');
+  const [priority, setPriority] = useState('medium');
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [search, setSearch] = useState('');
+  const [assigned, setAssigned] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const filtered = members.filter(m => m.full_name.toLowerCase().includes(search.toLowerCase()));
+  const canPreview = title && description && selectedMember && dueDate;
+
+  async function handleSubmit() {
+    if (!canPreview) {
+      push('Fill in Title, Description, Due Date, and pick a member', 'error');
+      return;
+    }
+    if (submitting) return;
+
+    setSubmitting(true);
+
+    try {
+      // Same insert shape as the verified Auto-Assign path.
+      const { error } = await supabase.from('tasks').insert({
+        workspace_id: workspace.id,
+        title: title.trim(),
+        description: description.trim(),
+        group_name: group.trim(),
+        due_date: dueDate,
+        priority,
+        status: 'not_started',
+        assigned_to: selectedMember,
+        assigned_by: user.id
+      });
+
+      if (error) throw error;
+
+      await refresh();
+      setAssigned(true);
+      push('Task assigned!', 'success');
+    } catch (err) {
+      console.error('[assignManually] task insert failed:', describeSupabaseError(err), err);
+      push(describeSupabaseError(err), 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">Task</div>
+        <h1 className="page-title">Assign Manually</h1>
+      </div>
+
+      <div className="card">
+        <div className="card-header bordered"><div className="card-title">Task Details</div></div>
+        <div className="card-body">
+          <Input label="Task Title" placeholder="Design onboarding flow"
+            value={title} onChange={e => setTitle(e.target.value)} />
+          <Textarea label="Task Description / What to do"
+            placeholder="Create designs for the new user onboarding flow, including desktop and mobile views."
+            value={description} onChange={e => setDescription(e.target.value)} />
+          <div className="assign-3col">
+            <Input label="Assign to Group" value={group} onChange={e => setGroup(e.target.value)} />
+            <Input label="Due Date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+            <Select label="Priority" value={priority} onChange={e => setPriority(e.target.value)}>
+              {PRIORITIES.map(p => (
+                <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+              ))}
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 20 }}>
+        <div className="card-header bordered"><div className="card-title">Choose Team Members</div></div>
+        <div className="card-body">
+          <input className="input" placeholder="Search" value={search}
+            onChange={e => setSearch(e.target.value)} style={{ marginBottom: 14 }} />
+          <div className="member-pick-list">
+            {filtered.map(m => (
+              <button key={m.id} type="button" className="member-pick-row"
+                onClick={() => setSelectedMember(m.id)}>
+                <Avatar name={m.full_name} size="md" />
+                <span className="member-pick-name">{m.full_name}</span>
+                <span className={`member-pick-radio ${selectedMember === m.id ? 'picked' : ''}`} />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 20 }}>
+        <div className="card-header bordered"><div className="card-title">Assignment Result</div></div>
+        <div className="card-body">
+          {assigned ? (
+            <>
+              <div className="assign-success">Task successfully assigned!</div>
+              <ul className="assign-result-list">
+                <li><strong>Task Title :</strong> {title}</li>
+                <li><strong>Assigned Member :</strong> {members.find(m => m.id === selectedMember)?.full_name}</li>
+                <li><strong>Group :</strong> {group}</li>
+                <li><strong>Due Date :</strong> {dueDate}</li>
+                <li><strong>Priority :</strong> {priority.charAt(0).toUpperCase() + priority.slice(1)}</li>
+              </ul>
+            </>
+          ) : canPreview ? (
+            <ul className="assign-result-list">
+              <li><strong>Task Title :</strong> {title}</li>
+              <li><strong>Assigned Member :</strong> {members.find(m => m.id === selectedMember)?.full_name}</li>
+              <li><strong>Group :</strong> {group}</li>
+              <li><strong>Due Date :</strong> {dueDate}</li>
+              <li><strong>Priority :</strong> {priority.charAt(0).toUpperCase() + priority.slice(1)}</li>
+            </ul>
+          ) : (
+            <p className="muted">Fill in the fields and pick a member to preview the assignment.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="assign-actions">
+        <Button variant="secondary" onClick={() => navigate('/tasks')}>Back</Button>
+        <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
+          {submitting ? 'Assigning…' : 'Assigned Task'}
+        </Button>
+      </div>
+    </div>
+  );
+}

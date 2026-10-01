@@ -1,37 +1,42 @@
-import { NavLink } from "react-router-dom";
+import { NavLink } from 'react-router-dom';
+import {
+  IconHome, IconFile, IconTask, IconUsers, IconVibe, IconChart, IconWorkspace
+} from './icons';
 
 const NAV = [
-  { label: "Home",        icon: "⌂", to: "/dashboard" },
-  { label: "Files",       icon: "🗀", to: "/files" },
-  { label: "Task",        icon: "☑", to: "/tasks" },
-  { label: "Members",     icon: "👥", to: "/members" },
-  { label: "Vibe Checks", icon: "◔", to: "/vibe-checks" },
-  { label: "Analytics",   icon: "📊", to: "/analytics" },
-  { label: "Settings",    icon: "⚙", to: "/settings" },
+  { to: '/dashboard', label: 'Home',         icon: <IconHome /> },
+  { to: '/files',     label: 'Files',        icon: <IconFile /> },
+  { to: '/tasks',     label: 'Task',         icon: <IconTask /> },
+  { to: '/members',   label: 'Members',      icon: <IconUsers /> },
+  { to: '/vibes',     label: 'Vibe Checks',  icon: <IconVibe /> },
+  { to: '/analytics', label: 'Analytics',    icon: <IconChart /> }
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen, onNavigate }) {
   return (
-    <aside className="sidebar">
-      <div className="brand">
-        <div className="brand-mark">S</div>
-        <span className="brand-name">SyncTask</span>
-      </div>
+    <aside className={`app-sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
+      {NAV.map(n => (
+        <NavLink
+          key={n.to}
+          to={n.to}
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          onClick={() => onNavigate && onNavigate()}
+        >
+          {n.icon}
+          <span>{n.label}</span>
+        </NavLink>
+      ))}
 
-      <nav className="nav">
-        {NAV.map((item) => (
-          <NavLink
-            key={item.label}
-            to={item.to}
-            className={({ isActive }) =>
-              `nav-item ${isActive ? "active" : ""}`
-            }
-          >
-            <span className="nav-icon">{item.icon}</span>
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
+      <div className="sidebar-divider" />
+
+      <NavLink
+        to="/workspace"
+        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        onClick={() => onNavigate && onNavigate()}
+      >
+        <IconWorkspace />
+        <span>Workspace</span>
+      </NavLink>
     </aside>
   );
 }

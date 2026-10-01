@@ -1,0 +1,281 @@
+import { useRef, useState } from 'react';
+import { useWorkspace } from '../context/MockWorkspaceContext';
+import { useToast } from '../context/ToastContext';
+import { useActivity } from '../context/ActivityContext';
+import Button from '../components/ui/Button';
+import FilePreviewModal from '../components/FilePreviewModal';
+import ConfirmModal from '../components/ConfirmModal';
+import { IconUpload, IconFile, IconTrash } from '../components/icons';
+import { formatBytes, formatRelative } from '../utils/format';
+import { describeSupabaseError } from '../utils/errors';
+import './Files.css';
+
+export default function Files() {
+  const { push } = useToast();
+  const {
+    workspace,
+    files,
+    members,
+    loading,
+    uploadFile,
+    deleteFile,
+    getFileUrl
+  } = useWorkspace();
+  const { logActivity } = useActivity();
+
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [deletingFile, setDeletingFile] = useState(false);
+  const [downloadingFile, setDownloadingFile] = useState(false);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [fileToDelete, setFileToDelete] = useState(null);
+  const inputRef = useRef(null);
+  const downloadLock = useRef(false);
+
+  const usedBytes = files.reduce((sum, f) => sum + (f.size_bytes || 0), 0);
+  const limitBytes = workspace?.storage_limit_bytes || 1073741824;
+  const pct = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
+
+  async function handleFiles(fileList) {
+    const arr = Array.from(fileList);
+    if (!arr.length || uploading) return;
+
+    setUploading(true);
+    let successCount = 0;
+    const errors = [];
+
+    for (const file of arr) {
+      try {
+        await uploadFile(file);
+        logActivity({
+          type: 'file',
+          title: 'File uploaded',
+          sub: file.name
+        });
+        successCount++;
+      } catch (err) {
+        console.error('[files] upload failed:', describeSupabaseError(err), err);
+        errors.push(file.name + ': ' + describeSupabaseError(err));
+      }
+    }
+
+    setUploading(false);
+
+    if (successCount > 0) {
+      push(`${successCount} file${successCount === 1 ? '' : 's'} uploaded`, 'success');
+    }
+    if (errors.length > 0) {
+      push(errors.join('\n'), 'error');
+    }
+  }
+
+  async function confirmDelete() {
+    if (!fileToDelete || deletingFile) return;
+    setDeletingFile(true);
+    try {
+      await deleteFile(fileToDelete.id);
+      logActivity({
+        type: 'file',
+        title: 'File deleted',
+        sub: fileToDelete.file_name
+      });
+      push('File deleted', 'success');
+      setFileToDelete(null);
+      setPreviewFile(null);
+    } catch (err) {
+      console.error('[files] delete failed:', describeSupabaseError(err), err);
+      push(describeSupabaseError(err), 'error');
+    } finally {
+      setDeletingFile(false);
+    }
+  }
+
+  async function handleDownload(file) {
+    if (downloadLock.current) return;
+    if (!file?.storage_path || !file?.file_name) {
+      push('The selected file is missing its storage path or filename.', 'error');
+      return;
+    }
+
+    downloadLock.current = true;
+    setDownloadingFile(true);
+    let objectUrl;
+    const link = document.createElement('a');
+
+    try {
+      const signedUrl = await getFileUrl(file.storage_path);
+      const response = await fetch(signedUrl);
+      if (!response.ok) {
+        throw new Error(`File download failed: ${response.status} ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      objectUrl = URL.createObjectURL(blob);
+      link.href = objectUrl;
+      link.download = file.file_name;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+    } catch (err) {
+      console.error('[files] download failed:', describeSupabaseError(err), err);
+      push(describeSupabaseError(err), 'error');
+    } finally {
+      link.remove();
+      if (objectUrl) window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      downloadLock.current = false;
+      setDownloadingFile(false);
+    }
+  }
+
+  const findUploader = (id) => members.find(m => m.id === id);
+
+  if (loading) {
+    return (
+      <div>
+        <div className="page-head">
+          <div className="page-eyebrow">Files</div>
+          <h1 className="page-title">Files</h1>
+        </div>
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-2)' }}>
+          Loading files…
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">Files</div>
+        <h1 className="page-title">Files</h1>
+        <p className="page-sub">Store, share, and manage all your project files in one place.</p>
+      </div>
+
+      <div className="files-top">
+        <div
+          className={`card files-dropzone ${dragging ? 'dragging' : ''}`}
+          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+        >
+          <div className="card-body" style={{ textAlign: 'center', padding: '40px 24px' }}>
+            <div className="files-upload-icon">
+              <IconUpload style={{ width: 40, height: 40, color: '#fff' }} />
+            </div>
+            <div className="files-upload-title">
+              {uploading ? 'Uploading…' : 'Upload your first file'}
+            </div>
+            <p className="muted" style={{ marginBottom: 16 }}>
+              Drag and drop files here, or click to browse.
+            </p>
+            <Button
+              variant="primary"
+              onClick={() => inputRef.current && inputRef.current.click()}
+              disabled={uploading}
+            >
+              {uploading ? 'Uploading…' : 'Browse files'}
+            </Button>
+            <p className="muted-2 mt-16" style={{ fontSize: 12.5 }}>
+              Supports doc, pdf, xls, ppt, csv, zip and more (max 100 MB per file).
+            </p>
+            <input
+              ref={inputRef}
+              type="file"
+              multiple
+              style={{ display: 'none' }}
+              onChange={(e) => handleFiles(e.target.files)}
+            />
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header bordered">
+            <div className="card-title" style={{ fontSize: 15 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <IconFile style={{ width: 18, height: 18 }} /> File Storage
+              </span>
+            </div>
+            <span className="muted" style={{ fontSize: 13 }}>
+              {formatBytes(usedBytes)} of {formatBytes(limitBytes)}
+            </span>
+          </div>
+          <div className="card-body">
+            <div className="files-meter">
+              <div className="files-meter-fill" style={{ width: pct + '%' }} />
+            </div>
+            <div className="files-meter-label">
+              {files.length} file{files.length === 1 ? '' : 's'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 22 }}>
+        {files.length === 0 ? (
+          <div className="card-body" style={{ textAlign: 'center', padding: '50px 24px' }}>
+            <svg width="120" height="90" viewBox="0 0 120 90" style={{ marginBottom: 16 }}>
+              <rect x="6" y="20" width="108" height="60" rx="8" fill="#eae0f7" />
+              <path d="M6 32 L114 32 L114 28 A8 8 0 0 0 106 20 L62 20 L56 12 L14 12 A8 8 0 0 0 6 20 Z" fill="#eae0f7" />
+              <line x1="20" y1="20" x2="100" y2="80" stroke="#fff" strokeWidth="8" strokeLinecap="round" />
+            </svg>
+            <p className="muted" style={{ maxWidth: 560, margin: '0 auto' }}>
+              <strong style={{ color: 'var(--text)' }}>No files yet.</strong> Files shared by your team will appear here.<br />
+              Upload project documents, designs, research, or other resources to get started.
+            </p>
+          </div>
+        ) : (
+          <div className="files-list">
+            {files.map(f => {
+              const uploader = findUploader(f.uploaded_by);
+              return (
+                <div
+                  key={f.id}
+                  className="files-row files-row-clickable"
+                  onClick={() => setPreviewFile(f)}
+                >
+                  <div className="files-icon">
+                    <IconFile style={{ width: 18, height: 18 }} />
+                  </div>
+                  <div className="files-main">
+                    <div className="files-name">{f.file_name}</div>
+                    <div className="files-meta">
+                      {uploader?.full_name || 'Unknown'} · {formatRelative(f.created_at)}
+                    </div>
+                  </div>
+                  <div className="files-version">v{f.version}</div>
+                  <div className="files-size">{formatBytes(f.size_bytes)}</div>
+                  <button
+                    className="files-delete"
+                    aria-label="Delete file"
+                    onClick={(e) => { e.stopPropagation(); setFileToDelete(f); }}
+                  >
+                    <IconTrash style={{ width: 15, height: 15 }} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <FilePreviewModal
+        open={!!previewFile}
+        file={previewFile}
+        onClose={() => setPreviewFile(null)}
+        onDelete={(f) => setFileToDelete(f)}
+        onDownload={handleDownload}
+        downloading={downloadingFile}
+      />
+
+      <ConfirmModal
+        open={!!fileToDelete}
+        onClose={() => setFileToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete this file?"
+        message={fileToDelete ? `"${fileToDelete.file_name}" will be permanently removed. This cannot be undone.` : ''}
+        confirmLabel={deletingFile ? 'Deleting…' : 'Delete'}
+        danger
+      />
+    </div>
+  );
+}

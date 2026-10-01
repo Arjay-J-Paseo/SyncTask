@@ -1,41 +1,120 @@
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { MockWorkspaceProvider } from './context/MockWorkspaceContext';
+import { NotificationsProvider } from './context/NotificationsContext';
+import { ActivityProvider } from './context/ActivityContext';
+import { ToastProvider } from './context/ToastContext';
 
-import Home from "./Pages/Home";
-import Login from "./Pages/Login";
-import Register from "./Pages/Register";
-import Dashboard from "./Pages/Dashboard";
-import Tasks from "./Pages/Tasks";
-import CreateWorkspace from "./Pages/CreateWorkspace";
-import JoinWorkspace from "./Pages/JoinWorkspace";
-import Files from "./Pages/Files";
-import Members from "./Pages/Members";
-import VibeCheck from "./Pages/VibeCheck";
-import Analytics from "./Pages/Analytics";
-import Settings from "./Pages/Settings";
+import AuthLayout from './layouts/AuthLayout';
+import AppLayout from './layouts/AppLayout';
+import OnboardingLayout from './layouts/OnboardingLayout';
+import AppShell from './components/AppShell';
+import ProtectedRoute from './components/ProtectedRoute';
+import { useAuth } from './context/AuthContext';
+import { useWorkspace } from './context/MockWorkspaceContext';
 
-function App() {
+import Landing from './pages/Landing';
+import SignUp from './pages/SignUp';
+import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import Welcome from './pages/Welcome';
+import CreateWorkspace from './pages/CreateWorkspace';
+import JoinWorkspace from './pages/JoinWorkspace';
+import Workspace from './pages/Workspace';
+import Dashboard from './pages/Dashboard';
+import Files from './pages/Files';
+import Tasks from './pages/Tasks';
+import AssignManually from './pages/AssignManually';
+import AutoAssign from './pages/AutoAssign';
+import Members from './pages/Members';
+import VibeChecks from './pages/VibeChecks';
+import Analytics from './pages/Analytics';
+import Plans from './pages/Plans';
+import NotFound from './pages/NotFound';
+
+function PlansRoute() {
+  const { user, loading: authLoading } = useAuth();
+  const { workspace, loading: workspaceLoading } = useWorkspace();
+
+  if (authLoading || (user && workspaceLoading)) {
+    return <div style={{ padding: 40, textAlign: 'center' }}>Loading…</div>;
+  }
+
+  if (user && workspace) {
+    return <AppShell><Plans /></AppShell>;
+  }
+
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/create-workspace" element={<CreateWorkspace />} />
-      <Route path="/join-workspace" element={<JoinWorkspace />} />
-
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/tasks" element={<Tasks />} />
-      <Route path="/files" element={<Files />} />
-      <Route path="/members" element={<Members />} />
-      <Route path="/vibe-checks" element={<VibeCheck />} />
-      <Route path="/analytics" element={<Analytics />} />
-
-      <Route
-        path="*"
-        element={<div style={{ padding: 40 }}>404 — Page not found</div>}
-      />
-    </Routes>
+    <main style={{ padding: 'clamp(18px, 2.5vw, 32px)', maxWidth: 1600, minWidth: 0, margin: '0 auto' }}>
+      <Plans />
+    </main>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <ToastProvider>
+        <AuthProvider>
+          <NotificationsProvider>
+            <ActivityProvider>
+              <MockWorkspaceProvider>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+
+                  <Route path="/signup" element={<AuthLayout><SignUp /></AuthLayout>} />
+                  <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
+                  <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
+                  <Route path="/plans" element={<PlansRoute />} />
+
+                  <Route
+                    path="/welcome"
+                    element={
+                      <ProtectedRoute denyIfWorkspace>
+                        <OnboardingLayout><Welcome /></OnboardingLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/workspace/create"
+                    element={
+                      <ProtectedRoute>
+                        <OnboardingLayout><CreateWorkspace /></OnboardingLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/workspace/join"
+                    element={
+                      <ProtectedRoute>
+                        <OnboardingLayout><JoinWorkspace /></OnboardingLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  <Route element={
+                    <ProtectedRoute requireWorkspace>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/files" element={<Files />} />
+                    <Route path="/tasks" element={<Tasks />} />
+                    <Route path="/tasks/new/manual" element={<AssignManually />} />
+                    <Route path="/tasks/new/auto" element={<AutoAssign />} />
+                    <Route path="/members" element={<Members />} />
+                    <Route path="/vibes" element={<VibeChecks />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/workspace" element={<Workspace />} />
+                  </Route>
+
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MockWorkspaceProvider>
+            </ActivityProvider>
+          </NotificationsProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </BrowserRouter>
+  );
+}
