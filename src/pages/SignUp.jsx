@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IconEye, IconEyeOff, LogoImage } from '../components/icons';
 import { useAuth } from '../context/AuthContext';
+import { useWorkspace } from '../context/MockWorkspaceContext';
 import { useToast } from '../context/ToastContext';
 import { describeSupabaseError } from '../utils/errors';
 import './Auth.css';
@@ -9,7 +10,8 @@ import './Auth.css';
 export default function SignUp() {
   const navigate = useNavigate();
   const { push } = useToast();
-  const { signUp } = useAuth();
+  const { signUp, user, loading: authLoading } = useAuth();
+  const { workspace, loading: workspaceLoading, error: workspaceError } = useWorkspace();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,7 +21,22 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [finishingSignup, setFinishingSignup] = useState(false);
   const submitLock = useRef(false);
+  const redirectLock = useRef(false);
+
+  useEffect(() => {
+    if (!finishingSignup || authLoading || !user || workspaceLoading || redirectLock.current) return;
+
+    redirectLock.current = true;
+
+    if (!workspace && workspaceError) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    navigate(workspace ? '/dashboard' : '/workspace/create', { replace: true });
+  }, [finishingSignup, authLoading, user, workspaceLoading, workspace, workspaceError, navigate]);
 
   function checkForm() {
     const next = {};
@@ -56,7 +73,7 @@ export default function SignUp() {
       }
 
       push('Account created', 'success');
-      navigate('/plans');
+      setFinishingSignup(true);
     } catch (err) {
       console.error('[signUp] signup failed:', describeSupabaseError(err), err);
       setErrors({ email: describeSupabaseError(err) });
