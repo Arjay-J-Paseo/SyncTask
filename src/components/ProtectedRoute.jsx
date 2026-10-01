@@ -24,7 +24,7 @@ export default function ProtectedRoute({
   }
 
   if (requireWorkspace && !workspace) {
-    return <Navigate to="/welcome" replace />;
+    return <Navigate to="/workspace/create" replace />;
   }
 
   if (denyIfWorkspace && workspace) {

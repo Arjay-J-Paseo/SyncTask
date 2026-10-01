@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { MockWorkspaceProvider } from './context/MockWorkspaceContext';
 import { NotificationsProvider } from './context/NotificationsContext';
@@ -51,6 +51,48 @@ function PlansRoute() {
   );
 }
 
+function LoginRoute() {
+  const { user, loading: authLoading } = useAuth();
+  const { workspace, loading: workspaceLoading, error, refresh } = useWorkspace();
+
+  function retryWorkspaceLoad() {
+    refresh().catch(loadError => {
+      console.error('[loginRoute] workspace retry rejected:', loadError);
+    });
+  }
+
+  if (authLoading || (user && workspaceLoading)) {
+    return <div style={{ padding: 40, textAlign: 'center' }}>Loading...</div>;
+  }
+
+  if (!user) return <AuthLayout><Login /></AuthLayout>;
+
+  let hasPlanSelection = false;
+  try {
+    hasPlanSelection = !!sessionStorage.getItem('synctask:selectedPlan');
+  } catch {
+    // Continue to the normal workspace route if session storage is unavailable.
+  }
+
+  if (hasPlanSelection) return <Navigate to="/plans" replace />;
+  if (workspace) return <Navigate to="/dashboard" replace />;
+
+  if (error) {
+    return (
+      <main className="auth-page">
+        <section className="auth-card" role="alert">
+          <p>Workspace information could not be loaded: {error.message}</p>
+          <button className="auth-submit" type="button" onClick={retryWorkspaceLoad}>
+            Retry
+          </button>
+        </section>
+      </main>
+    );
+  }
+
+  return <Navigate to="/workspace/create" replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -63,7 +105,7 @@ export default function App() {
                   <Route path="/" element={<Landing />} />
 
                   <Route path="/signup" element={<AuthLayout><SignUp /></AuthLayout>} />
-                  <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
+                  <Route path="/login" element={<LoginRoute />} />
                   <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
                   <Route path="/plans" element={<PlansRoute />} />
 

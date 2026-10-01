@@ -457,7 +457,7 @@ export function MockWorkspaceProvider({ children }) {
     activity,
     inviteCode,
     role,
-    loading,
+    loading: loading || (!!user && loadedUserIdRef.current !== user.id),
     error,
     refresh,
     updateTask,

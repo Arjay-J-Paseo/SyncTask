@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogoImage } from '../components/icons';
+import { IconEye, IconEyeOff, LogoImage } from '../components/icons';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { describeSupabaseError } from '../utils/errors';
@@ -15,6 +15,8 @@ export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const submitLock = useRef(false);
@@ -118,16 +120,28 @@ export default function SignUp() {
             <label htmlFor="signup-password" style={{ position: 'absolute', left: '-9999px' }}>
               Create a password
             </label>
-            <input
-              id="signup-password"
-              name="password"
-              type="password"
-              placeholder="Create a password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: '' })); }}
-              className={errors.password ? 'invalid' : ''}
-            />
+            <div className="input-with-toggle">
+              <input
+                id="signup-password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Create a password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: '' })); }}
+                className={errors.password ? 'invalid' : ''}
+                style={{ paddingRight: 44 }}
+              />
+              <button
+                type="button"
+                className="input-toggle"
+                onClick={() => setShowPassword(show => !show)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <IconEyeOff /> : <IconEye />}
+              </button>
+            </div>
             <p className="auth-field-hint">Use at least 8 characters.</p>
             <p className="auth-field-error">{errors.password || ''}</p>
           </div>
@@ -136,19 +150,31 @@ export default function SignUp() {
             <label htmlFor="signup-confirm-password" style={{ position: 'absolute', left: '-9999px' }}>
               Confirm Password
             </label>
-            <input
-              id="signup-confirm-password"
-              name="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                setErrors(p => ({ ...p, confirmPassword: '' }));
-              }}
-              className={errors.confirmPassword ? 'invalid' : ''}
-            />
+            <div className="input-with-toggle">
+              <input
+                id="signup-confirm-password"
+                name="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="Confirm your password"
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setErrors(p => ({ ...p, confirmPassword: '' }));
+                }}
+                className={errors.confirmPassword ? 'invalid' : ''}
+                style={{ paddingRight: 44 }}
+              />
+              <button
+                type="button"
+                className="input-toggle"
+                onClick={() => setShowConfirmPassword(show => !show)}
+                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                aria-pressed={showConfirmPassword}
+              >
+                {showConfirmPassword ? <IconEyeOff /> : <IconEye />}
+              </button>
+            </div>
             <p className="auth-field-error">{errors.confirmPassword || ''}</p>
           </div>
 

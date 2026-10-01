@@ -24,7 +24,7 @@ export default function AutoAssign() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [group, setGroup] = useState('Product Design');
+  const [group, setGroup] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('medium');
   const [selectedMember, setSelectedMember] = useState(null);
@@ -117,7 +117,7 @@ export default function AutoAssign() {
             placeholder="Create designs for the new user onboarding flow."
             value={description} onChange={e => setDescription(e.target.value)} />
           <div className="assign-3col">
-            <Input label="Assign to Group" value={group} onChange={e => setGroup(e.target.value)} />
+            <Input label="Assign to Group" placeholder="Enter a group name" value={group} onChange={e => setGroup(e.target.value)} />
             <Input label="Due Date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
             <Select label="Priority" value={priority} onChange={e => setPriority(e.target.value)}>
               {PRIORITIES.map(p => (

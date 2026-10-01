@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogoImage } from '../components/icons';
+import { IconEye, IconEyeOff, LogoImage } from '../components/icons';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { describeSupabaseError } from '../utils/errors';
@@ -13,6 +13,7 @@ export default function Login() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const submitLock = useRef(false);
@@ -93,16 +94,28 @@ export default function Login() {
             <label htmlFor="login-password" style={{ position: 'absolute', left: '-9999px' }}>
               Password
             </label>
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: '' })); }}
-              className={errors.password ? 'invalid' : ''}
-            />
+            <div className="input-with-toggle">
+              <input
+                id="login-password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: '' })); }}
+                className={errors.password ? 'invalid' : ''}
+                style={{ paddingRight: 44 }}
+              />
+              <button
+                type="button"
+                className="input-toggle"
+                onClick={() => setShowPassword(show => !show)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <IconEyeOff /> : <IconEye />}
+              </button>
+            </div>
             <p className="auth-field-error">{errors.password || ''}</p>
           </div>
 
