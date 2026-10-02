@@ -10,6 +10,29 @@ import { formatBytes, formatRelative } from '../utils/format';
 import { describeSupabaseError } from '../utils/errors';
 import './Files.css';
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const ALLOWED_FILE_EXTENSIONS = new Set([
+  'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'txt', 'zip',
+  'png', 'jpg', 'jpeg', 'gif', 'webp'
+]);
+const ALLOWED_FILE_MIME_TYPES = {
+  pdf: ['application/pdf', 'application/x-pdf'],
+  doc: ['application/msword'],
+  docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  xls: ['application/vnd.ms-excel'],
+  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+  ppt: ['application/vnd.ms-powerpoint'],
+  pptx: ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+  csv: ['text/csv', 'application/csv', 'application/vnd.ms-excel', 'text/plain'],
+  txt: ['text/plain'],
+  zip: ['application/zip', 'application/x-zip-compressed'],
+  png: ['image/png'],
+  jpg: ['image/jpeg'],
+  jpeg: ['image/jpeg'],
+  gif: ['image/gif'],
+  webp: ['image/webp']
+};
+
 function isImageFile(file) {
   return file?.mime_type?.startsWith('image/')
     || /\.(png|jpe?g|gif|webp)$/i.test(file?.file_name || '');
@@ -39,6 +62,7 @@ export default function Files() {
   const [fileToDelete, setFileToDelete] = useState(null);
   const inputRef = useRef(null);
   const downloadLock = useRef(false);
+  const uploadLock = useRef(false);
   const previewRequest = useRef(0);
 
   const usedBytes = files.reduce((sum, f) => sum + (f.size_bytes || 0), 0);
@@ -84,29 +108,56 @@ export default function Files() {
   }
 
   async function handleFiles(fileList) {
-    const arr = Array.from(fileList);
-    if (!arr.length || uploading) return;
+    const arr = Array.from(fileList || []);
+    if (!arr.length || uploadLock.current) return;
 
+    uploadLock.current = true;
     setUploading(true);
     let successCount = 0;
     const errors = [];
 
-    for (const file of arr) {
-      try {
-        await uploadFile(file);
-        logActivity({
-          type: 'file',
-          title: 'File uploaded',
-          sub: file.name
-        });
-        successCount++;
-      } catch (err) {
-        console.error('[files] upload failed:', describeSupabaseError(err), err);
-        errors.push(file.name + ': ' + describeSupabaseError(err));
-      }
-    }
+    try {
+      for (const file of arr) {
+        const extension = file?.name?.split('.').pop()?.toLowerCase();
+        let validationError = '';
 
-    setUploading(false);
+        if (!file || !file.name || !Number.isFinite(file.size)) {
+          validationError = 'Invalid file.';
+        } else if (file.size <= 0) {
+          validationError = 'The file is empty.';
+        } else if (file.size > MAX_FILE_SIZE) {
+          validationError = 'File is too large (max 100 MB per file).';
+        } else if (!ALLOWED_FILE_EXTENSIONS.has(extension)) {
+          validationError = 'This file type is not supported.';
+        } else if (
+          file.type && file.type !== 'application/octet-stream'
+          && !ALLOWED_FILE_MIME_TYPES[extension]?.includes(file.type.toLowerCase())
+        ) {
+          validationError = 'The file type does not match its extension.';
+        }
+
+        if (validationError) {
+          errors.push(`${file?.name || 'Selected file'}: ${validationError}`);
+          continue;
+        }
+
+        try {
+          await uploadFile(file);
+          logActivity({
+            type: 'file',
+            title: 'File uploaded',
+            sub: file.name
+          });
+          successCount++;
+        } catch (err) {
+          console.error('[files] upload failed:', describeSupabaseError(err), err);
+          errors.push(file.name + ': ' + describeSupabaseError(err));
+        }
+      }
+    } finally {
+      uploadLock.current = false;
+      setUploading(false);
+    }
 
     if (successCount > 0) {
       push(`${successCount} file${successCount === 1 ? '' : 's'} uploaded`, 'success');
@@ -223,14 +274,19 @@ export default function Files() {
               {uploading ? 'Uploading…' : 'Browse files'}
             </Button>
             <p className="muted-2 mt-16" style={{ fontSize: 12.5 }}>
-              Supports doc, pdf, xls, ppt, csv, zip and more (max 100 MB per file).
+              Allowed: PDF, Word, Excel, PowerPoint, CSV, TXT, ZIP, PNG, JPG, GIF, WebP (max 100 MB). File checks do not scan image content.
             </p>
             <input
               ref={inputRef}
               type="file"
               multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.zip,.png,.jpg,.jpeg,.gif,.webp"
               style={{ display: 'none' }}
-              onChange={(e) => handleFiles(e.target.files)}
+              onChange={(e) => {
+                const selectedFiles = e.target.files;
+                e.target.value = '';
+                handleFiles(selectedFiles);
+              }}
             />
           </div>
         </div>
