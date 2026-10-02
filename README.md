@@ -1,4 +1,6 @@
 # 🔷 SyncTask
+Documentation update.
+
 
 > A collaborative project management platform for student teams and IT project groups — monitor contributions, track file versions, manage tasks, and keep every member accountable.
 
