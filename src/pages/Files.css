@@ -89,4 +89,6 @@
 @media (max-width: 640px) {
   .files-size { display: none; }
   .files-delete { opacity: 1; }
+  .files-name { min-width: 0; overflow-wrap: anywhere; }
+  .files-meta { overflow-wrap: anywhere; }
 }

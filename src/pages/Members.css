@@ -33,9 +33,14 @@
   .members-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
-  .members-head, .members-row { grid-template-columns: 1fr 1fr; font-size: 13px; }
+  .members-head, .members-row {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr) minmax(0, 0.9fr);
+    font-size: 13px;
+  }
   .members-head span:nth-child(3), .members-head span:nth-child(4),
   .members-row > :nth-child(3), .members-row > :nth-child(4) { display: none; }
+  .members-cell-name { min-width: 0; gap: 8px; }
+  .members-cell-name span, .members-role, .members-row > :nth-child(5) { overflow-wrap: anywhere; }
   .members-row-clickable { cursor: pointer; }
 .members-row-clickable:hover { background: #fafafa; }
 }
