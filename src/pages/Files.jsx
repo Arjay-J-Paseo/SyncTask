@@ -283,7 +283,7 @@ export default function Files() {
               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.zip,.png,.jpg,.jpeg,.gif,.webp"
               style={{ display: 'none' }}
               onChange={(e) => {
-                const selectedFiles = e.target.files;
+                const selectedFiles = Array.from(e.target.files || []);
                 e.target.value = '';
                 handleFiles(selectedFiles);
               }}
