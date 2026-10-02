@@ -29,6 +29,7 @@ import AutoAssign from './pages/AutoAssign';
 import Members from './pages/Members';
 import VibeChecks from './pages/VibeChecks';
 import Analytics from './pages/Analytics';
+import HelpSupport from './pages/HelpSupport';
 import Plans from './pages/Plans';
 import NotFound from './pages/NotFound';
 
@@ -147,6 +148,7 @@ export default function App() {
                     <Route path="/members" element={<Members />} />
                     <Route path="/vibes" element={<VibeChecks />} />
                     <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/help" element={<HelpSupport />} />
                     <Route path="/workspace" element={<Workspace />} />
                   </Route>
 

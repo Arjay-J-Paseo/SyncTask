@@ -20,6 +20,7 @@ export default function AccountDropdown({
     { icon: <IconUser />,  title: 'Account Setting',      sub: 'Edit your profile, email, and password', onClick: onOpenProfile },
     { icon: <IconUsers />, title: 'Workspace Setting',    sub: 'View workspace details',                 onClick: onOpenWorkspace },
     { icon: <IconBell />,  title: 'Notification Setting', sub: 'Choose what you want to be notified about', onClick: onOpenNotifSettings },
+    { icon: <IconUsers />, title: 'Help & Support',       sub: 'FAQs and safety information',              onClick: () => { navigate('/help'); onClose(); } },
     { icon: <IconCrown />, title: 'Subscription',         sub: 'Manage your plan and usage',             onClick: () => { navigate('/plans'); onClose(); } }
   ];
 
