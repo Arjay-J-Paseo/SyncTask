@@ -81,7 +81,7 @@ export default function HelpSupport() {
           </div>
           <div className="card-body">
             <p className="help-support-copy">
-              Reports are not stored in SyncTask yet. No support email or reporting destination is configured, so persistent problem reporting is not currently available.
+              Reports are not stored in SyncTask yet. Use Contact Support to send this issue manually.
             </p>
             <p className="help-support-copy">
               A report should include the feature, what went wrong, and a description of what happened.
@@ -95,7 +95,21 @@ export default function HelpSupport() {
           </div>
           <div className="card-body">
             <p className="help-support-copy">
-              SyncTask does not have a configured support email or contact destination. No message has been sent or saved.
+              For questions, bugs, account issues, or workspace problems, contact SyncTask support at:
+            </p>
+            <p className="help-support-copy">
+              <a href="mailto:arjaypaseo10@gmail.com?subject=SyncTask%20Support%20Request&amp;body=Hello%20SyncTask%20Support%2C%0A%0AFeature%3A%0AProblem%3A%0ADetails%3A">
+                arjaypaseo10@gmail.com
+              </a>
+            </p>
+            <a
+              className="btn btn-primary"
+              href="mailto:arjaypaseo10@gmail.com?subject=SyncTask%20Support%20Request&amp;body=Hello%20SyncTask%20Support%2C%0A%0AFeature%3A%0AProblem%3A%0ADetails%3A"
+            >
+              Contact Support
+            </a>
+            <p className="help-support-copy">
+              Your email application will open so you can review and send the message. SyncTask does not send it automatically.
             </p>
           </div>
         </section>
