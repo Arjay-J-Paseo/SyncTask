@@ -108,8 +108,6 @@ export default function Plans() {
       } catch {
         // The selection is only a frontend preference.
       }
-      navigate('/dashboard');
-      return;
     }
 
     navigate('/welcome');
