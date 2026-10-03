@@ -21,6 +21,8 @@ export function MockWorkspaceProvider({ children }) {
   const [activity, setActivity] = useState([]);
   const [inviteCode, setInviteCode] = useState('');
   const [role, setRole] = useState('member');
+  const [myWorkspaces, setMyWorkspaces] = useState([]);
+  const [myWorkspacesError, setMyWorkspacesError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const loadedUserIdRef = useRef(null);
@@ -40,6 +42,8 @@ export function MockWorkspaceProvider({ children }) {
       setActivity([]);
       setInviteCode('');
       setRole('member');
+      setMyWorkspaces([]);
+      setMyWorkspacesError(null);
       setLoading(false);
       return { ok: false, error: new Error('No authenticated user is available.') };
     }
@@ -54,6 +58,8 @@ export function MockWorkspaceProvider({ children }) {
       setActivity([]);
       setInviteCode('');
       setRole('member');
+      setMyWorkspaces([]);
+      setMyWorkspacesError(null);
     }
 
     setLoading(true);
@@ -69,6 +75,10 @@ export function MockWorkspaceProvider({ children }) {
       if (memErr) throw memErr;
 
       const memberships = membershipRows || [];
+      setMyWorkspacesError(null);
+      if (memberships.length === 0) {
+        setMyWorkspaces([]);
+      }
       const selectionKey = `synctask:workspace:${user.id}`;
       let savedWorkspaceId = null;
       try {
@@ -112,7 +122,12 @@ export function MockWorkspaceProvider({ children }) {
       }
       setRole(memberRow.role);
 
-      const [wsRes, membersRes, tasksRes, filesRes, vibesRes, activityRes, codesRes] =
+      const workspaceIds = memberships.map(row => row.workspace_id);
+      const workspaceListRequest = workspaceIds.length > 0
+        ? supabase.from('workspaces').select('id, name, owner_id').in('id', workspaceIds)
+        : Promise.resolve({ data: [], error: null });
+
+      const [wsRes, membersRes, tasksRes, filesRes, vibesRes, activityRes, codesRes, workspaceListRes] =
         await Promise.all([
           supabase.from('workspaces').select('*').eq('id', wsId).single(),
           supabase.from('workspace_members').select('*, profiles(*)').eq('workspace_id', wsId),
@@ -120,8 +135,32 @@ export function MockWorkspaceProvider({ children }) {
           supabase.from('files').select('*').eq('workspace_id', wsId).order('created_at', { ascending: false }),
           supabase.from('vibe_checks').select('*').eq('workspace_id', wsId).order('created_at', { ascending: false }),
           supabase.from('activity_log').select('*').eq('workspace_id', wsId).order('created_at', { ascending: false }).limit(30),
-          supabase.from('invite_codes').select('code').eq('workspace_id', wsId).is('revoked_at', null).order('created_at', { ascending: false }).limit(1)
+          supabase.from('invite_codes').select('code').eq('workspace_id', wsId).is('revoked_at', null).order('created_at', { ascending: false }).limit(1),
+          workspaceListRequest
         ]);
+
+      if (workspaceListRes.error) {
+        const listError = toLoadError(workspaceListRes.error);
+        console.error('[workspace] workspace list query failed:', listError);
+        setMyWorkspaces([]);
+        setMyWorkspacesError(listError);
+      } else {
+        const recordsById = new Map((workspaceListRes.data || []).map(row => [row.id, row]));
+        const listedWorkspaces = memberships.map(membership => {
+          const record = recordsById.get(membership.workspace_id);
+          return record ? { ...record, role: membership.role, joined_at: membership.joined_at } : null;
+        });
+
+        if (listedWorkspaces.some(item => !item)) {
+          const listError = toLoadError(new Error('Some workspace details could not be loaded.'));
+          console.error('[workspace] one or more workspace details were unavailable.');
+          setMyWorkspaces([]);
+          setMyWorkspacesError(listError);
+        } else {
+          const sortedWorkspaces = listedWorkspaces.sort((a, b) => a.name.localeCompare(b.name));
+          setMyWorkspaces(sortedWorkspaces);
+        }
+      }
 
       if (wsRes.error) {
         const fatal = new Error(describeSupabaseError(wsRes.error));
@@ -171,6 +210,8 @@ export function MockWorkspaceProvider({ children }) {
       return loadError ? { ok: false, error: loadError } : { ok: true };
     } catch (err) {
       console.error('[workspace] refresh failed:', err, toLoadError(err));
+      setMyWorkspaces([]);
+      setMyWorkspacesError(toLoadError(err));
       const loadError = toLoadError(err);
       setError(loadError);
       return { ok: false, error: loadError };
@@ -457,6 +498,8 @@ export function MockWorkspaceProvider({ children }) {
     activity,
     inviteCode,
     role,
+    myWorkspaces,
+    myWorkspacesError,
     loading: loading || (!!user && loadedUserIdRef.current !== user.id),
     error,
     refresh,
