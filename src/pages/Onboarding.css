@@ -283,56 +283,6 @@
   outline-offset: 3px;
 }
 
-/* ===== Upgrade tag + notice ===== */
-.ob-size-tag {
-  position: absolute;
-  top: -6px;
-  right: -4px;
-  font-size: 9px;
-  font-weight: 800;
-  font-style: normal;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: var(--ob-purple, #8244cf);
-  color: #fff;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-  line-height: 1.2;
-}
-
-.ob-upgrade-notice {
-  margin-top: 14px;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: #f0e7fc;
-  border: 1px solid #d9c5f5;
-  animation: obUpgradeIn 0.25s ease-out;
-}
-@keyframes obUpgradeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.ob-upgrade-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--ob-purple, #8244cf);
-  margin-bottom: 4px;
-}
-.ob-upgrade-text {
-  font-size: 12.5px;
-  color: var(--ob-text, #222032);
-  line-height: 1.5;
-  margin: 0 0 8px;
-}
-.ob-upgrade-link {
-  display: inline-block;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--ob-purple, #8244cf);
-  text-decoration: none;
-}
-.ob-upgrade-link:hover { text-decoration: underline; }
-
 /* ===== Submit button ===== */
 .ob-button {
   display: inline-flex;
@@ -467,8 +417,7 @@
 @media (prefers-reduced-motion: reduce) {
   .welcome-card,
   .ob-button,
-  .ob-size-choice span,
-  .ob-upgrade-notice {
+  .ob-size-choice span {
     transition: none !important;
     animation: none !important;
   }
