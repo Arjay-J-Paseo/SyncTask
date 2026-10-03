@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
   const sessionRef = useRef(null);
   const userRef = useRef(null);
   const authEventVersionRef = useRef(0);
@@ -90,8 +91,10 @@ export function AuthProvider({ children }) {
     let active = true;
     const initialEventVersion = authEventVersionRef.current;
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
       if (!active) return;
+      if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
+      if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') setPasswordRecovery(false);
       authEventVersionRef.current += 1;
       loadProfile(sess).catch(error => {
         console.error('[auth] session profile handling failed:', error);
@@ -183,8 +186,12 @@ export function AuthProvider({ children }) {
 
   async function resetPassword(email) {
     return await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/login'
+      redirectTo: window.location.origin + '/reset-password'
     });
+  }
+
+  async function updatePassword(password) {
+    return await supabase.auth.updateUser({ password });
   }
 
   return (
@@ -193,11 +200,13 @@ export function AuthProvider({ children }) {
       user,
       loading,
       signedIn: !!user,
+      passwordRecovery,
       signUp,
       signIn,
       signOut,
       updateProfile,
-      resetPassword
+      resetPassword,
+      updatePassword
     }}>
       {children}
     </AuthContext.Provider>

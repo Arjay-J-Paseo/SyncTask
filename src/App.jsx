@@ -17,6 +17,7 @@ import Landing from './pages/Landing';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Welcome from './pages/Welcome';
 import CreateWorkspace from './pages/CreateWorkspace';
 import JoinWorkspace from './pages/JoinWorkspace';
@@ -108,6 +109,7 @@ export default function App() {
                   <Route path="/signup" element={<AuthLayout><SignUp /></AuthLayout>} />
                   <Route path="/login" element={<LoginRoute />} />
                   <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
+                  <Route path="/reset-password" element={<AuthLayout><ResetPassword /></AuthLayout>} />
                   <Route path="/plans" element={<PlansRoute />} />
 
                   <Route
