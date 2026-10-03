@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { LogoImage } from '../components/icons';
 import './Landing.css';
 
 export default function Landing() {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialogPlan, setDialogPlan] = useState(null);
   const [insightsOpen, setInsightsOpen] = useState(false);
@@ -274,7 +275,12 @@ export default function Landing() {
             <p className="eyebrow">Let's get organized</p>
             <h2>Your {dialogPlan} plan</h2>
             <p>Your selected plan is ready to connect to a signup or checkout service.</p>
-            <button className="button close-dialog" onClick={closeDialog}>Continue exploring</button>
+            <button
+              className="button close-dialog"
+              onClick={() => dialogPlan === 'Starter' ? navigate('/login') : closeDialog()}
+            >
+              {dialogPlan === 'Starter' ? 'Continue to Login' : 'Continue exploring'}
+            </button>
           </div>
         </div>
       )}
