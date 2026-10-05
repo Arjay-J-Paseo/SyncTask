@@ -113,7 +113,7 @@ export default function Login() {
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 aria-pressed={showPassword}
               >
-                {showPassword ? <IconEyeOff /> : <IconEye />}
+                {showPassword ? <IconEye /> : <IconEyeOff />}
               </button>
             </div>
             <p className="auth-field-error">{errors.password || ''}</p>

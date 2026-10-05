@@ -104,7 +104,7 @@ export default function ResetPassword() {
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   aria-pressed={showPassword}
                 >
-                  {showPassword ? <IconEyeOff /> : <IconEye />}
+                  {showPassword ? <IconEye /> : <IconEyeOff />}
                 </button>
               </div>
               <p className="auth-field-error">{error}</p>
@@ -133,7 +133,7 @@ export default function ResetPassword() {
                   aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                   aria-pressed={showConfirmPassword}
                 >
-                  {showConfirmPassword ? <IconEyeOff /> : <IconEye />}
+                  {showConfirmPassword ? <IconEye /> : <IconEyeOff />}
                 </button>
               </div>
             </div>

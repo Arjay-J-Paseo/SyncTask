@@ -148,7 +148,7 @@ export default function SignUp() {
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 aria-pressed={showPassword}
               >
-                {showPassword ? <IconEyeOff /> : <IconEye />}
+                {showPassword ? <IconEye /> : <IconEyeOff />}
               </button>
             </div>
             <p className="auth-field-hint">Use at least 8 characters.</p>
@@ -181,7 +181,7 @@ export default function SignUp() {
                 aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                 aria-pressed={showConfirmPassword}
               >
-                {showConfirmPassword ? <IconEyeOff /> : <IconEye />}
+                {showConfirmPassword ? <IconEye /> : <IconEyeOff />}
               </button>
             </div>
             <p className="auth-field-error">{errors.confirmPassword || ''}</p>
