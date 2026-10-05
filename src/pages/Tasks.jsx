@@ -16,6 +16,7 @@ import {
 } from '../components/icons';
 import { formatDate } from '../utils/format';
 import { describeSupabaseError } from '../utils/errors';
+import { supabase } from '../lib/supabase';
 import './Tasks.css';
 
 export default function Tasks() {
@@ -107,7 +108,29 @@ export default function Tasks() {
   }
 
   async function handleNotify(task) {
-    const assignee = findMember(task.assigned_to);
+    // Re-read assigned_to so a stale list snapshot can never route to the sender.
+    let recipientId = null;
+    try {
+      const { data: fresh, error: freshErr } = await supabase
+        .from('tasks')
+        .select('assigned_to')
+        .eq('id', task.id)
+        .maybeSingle();
+
+      if (freshErr) throw freshErr;
+      recipientId = fresh?.assigned_to || null;
+    } catch (err) {
+      console.error('[tasks] notify assignee lookup failed:', describeSupabaseError(err), err);
+      push(describeSupabaseError(err), 'error');
+      return;
+    }
+
+    if (!recipientId) {
+      push('This task has no assignee to notify.', 'error');
+      return;
+    }
+
+    const assignee = findMember(recipientId);
     const who = assignee ? assignee.full_name : 'the assignee';
 
     const created = await addNotification({
@@ -115,7 +138,8 @@ export default function Tasks() {
       title: 'Reminder sent',
       sub: `You sent a reminder to ${who} about "${task.title}".`,
       taskId: task.id,
-      workspaceId: workspace.id
+      workspaceId: workspace.id,
+      userId: recipientId
     });
 
     // No false success: the red toast from addNotification already explained why.
