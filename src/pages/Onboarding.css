@@ -244,11 +244,26 @@
 .ob-size-options {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 9px;
+  column-gap: 9px;
+  row-gap: 9px;
+  padding-top: 16px;
 }
 .ob-size-choice {
   position: relative;
   cursor: pointer;
+}
+.ob-size-tag {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  z-index: 1;
+  transform: translateX(-50%);
+  color: var(--ob-purple, #8244cf);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
 }
 .ob-size-choice input {
   position: absolute;
@@ -314,6 +329,14 @@
 .ob-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.ob-create-form .ob-button {
+  background: var(--accent);
+}
+.ob-create-form .ob-button:hover:not(:disabled) {
+  background: #6c4fd0;
+  box-shadow: 0 6px 16px rgba(124, 92, 224, 0.28);
 }
 
 /* ===== Form status + footer ===== */
@@ -409,7 +432,10 @@
   .welcome-card { padding: 22px 18px; }
   .ob-page-heading h1 { font-size: 24px; }
   .ob-form-card { padding: 22px 14px; }
-  .ob-size-options { grid-template-columns: repeat(2, 1fr); }
+  .ob-size-options {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 24px;
+  }
   .ob-illustration { max-width: 260px; }
   .ob-benefit-bar { max-width: 100%; }
 }
