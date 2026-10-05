@@ -149,7 +149,9 @@ export default function TaskLottery() {
         type: 'task',
         title: 'Task assigned via Lottery',
         sub: `"${result.task.title}" was assigned to ${result.member.full_name}.`,
-        workspaceId: workspace.id
+        taskId: result.task.id,
+        workspaceId: workspace.id,
+        userId: result.member.id
       });
 
       logActivity({
