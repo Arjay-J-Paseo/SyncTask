@@ -229,6 +229,15 @@ export function MockWorkspaceProvider({ children }) {
   }, [refresh]);
 
   async function updateTask(id, updates) {
+    const actorRole = String(role || 'member').toLowerCase();
+    const isPrivileged = actorRole === 'owner' || actorRole === 'admin' || actorRole === 'leader';
+
+    // Members are view-only for tasks. Owners/leaders keep full manage rights.
+    // This is UX-only; Supabase RLS (tasks_update_owner, no member UPDATE) is final.
+    if (!isPrivileged) {
+      throw new Error('Only the workspace owner can update tasks.');
+    }
+
     const previous = tasks;
     setTasks(list => list.map(t => (t.id === id ? { ...t, ...updates } : t)));
     try {

@@ -113,7 +113,7 @@ export default function NotificationsDropdown({
               onClick={() => handleItemClick(n)}
             >
               <div className="notification-avatar">
-                {n.type === 'task' && <IconTask style={{ width: 16, height: 16 }} />}
+                {(n.type === 'task' || n.type === 'review') && <IconTask style={{ width: 16, height: 16 }} />}
                 {n.type === 'member' && <IconUser style={{ width: 16, height: 16 }} />}
                 {n.type === 'general' && <IconBell style={{ width: 16, height: 16 }} />}
               </div>

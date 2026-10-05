@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useWorkspace } from '../context/MockWorkspaceContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNotifications } from '../context/NotificationsContext';
 import { useActivity } from '../context/ActivityContext';
@@ -23,9 +24,13 @@ export default function Tasks() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { push } = useToast();
-  const { state, tasks, members, workspace, updateTask, deleteTask } = useWorkspace();
-  const { addNotification } = useNotifications();
+  const { state, tasks, members, files, workspace, role, updateTask, deleteTask } = useWorkspace();
+  const { user } = useAuth();
+  const { addNotification, notifications } = useNotifications();
   const { logActivity } = useActivity();
+  const actorRole = String(role || 'member').toLowerCase();
+  const canManageTasks = actorRole === 'owner' || actorRole === 'admin' || actorRole === 'leader';
+  const [submittingReview, setSubmittingReview] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
@@ -87,6 +92,10 @@ export default function Tasks() {
   const notStarted = tasks.filter(t => t.status === 'not_started').length;
 
   async function handleToggle(task) {
+    if (!canManageTasks) {
+      push('Only the workspace owner can update task status.', 'error');
+      return;
+    }
     const newStatus = task.status === 'completed' ? 'not_started' : 'completed';
 
     try {
@@ -105,6 +114,103 @@ export default function Tasks() {
       sub: task.title
     });
     push(newStatus === 'completed' ? 'Task marked complete' : 'Task reopened', 'success');
+  }
+
+  function isSubmittedForReview(taskId) {
+    try {
+      const raw = localStorage.getItem(`synctask:review:${taskId}`);
+      if (raw) return true;
+    } catch {
+      // localStorage unavailable — fall through to notification check
+    }
+    return (notifications || []).some(
+      n => n.taskId === taskId && n.type === 'review' && !n.read
+    );
+  }
+
+  // Files have no task_id column — only workspace_id + uploaded_by.
+  // Safest UI-level proof of work: member uploaded ≥1 file to this workspace.
+  function memberWorkFile() {
+    if (!user) return null;
+    const mine = (files || [])
+      .filter(f => f.uploaded_by === user.id && f.workspace_id === workspace?.id)
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    return mine[0] || null;
+  }
+
+  function canSubmitForReview(task) {
+    if (canManageTasks) return false;
+    if (!user || task.assigned_to !== user.id) return false;
+    if (isSubmittedForReview(task.id)) return false;
+    return !!memberWorkFile();
+  }
+
+  function submitDisabledReason(task) {
+    if (canManageTasks) return '';
+    if (!user || task.assigned_to !== user.id) return '';
+    if (isSubmittedForReview(task.id)) return 'Already submitted for review.';
+    if (!memberWorkFile()) return 'Upload your work before submitting for review.';
+    return '';
+  }
+
+  async function handleSubmitForReview(task) {
+    if (canManageTasks) return;
+    if (!user || task.assigned_to !== user.id) {
+      push('Only the assigned member can submit this task for review.', 'error');
+      return;
+    }
+    if (submittingReview[task.id] || isSubmittedForReview(task.id)) {
+      push('Already submitted for review.', 'error');
+      return;
+    }
+
+    const workFile = memberWorkFile();
+    if (!workFile) {
+      push('Upload your work before submitting for review.', 'error');
+      return;
+    }
+
+    // Leader recipient: workspace owner first, else first owner/admin/leader member.
+    const leader = members.find(m => m.id === workspace?.owner_id)
+      || members.find(m => ['owner', 'admin', 'leader'].includes(String(m.role || '').toLowerCase()));
+    if (!leader) {
+      push('No group leader found for this workspace.', 'error');
+      return;
+    }
+
+    const memberName = user.full_name || user.email || 'A member';
+    const fileLine = workFile?.file_name ? `
+File: ${workFile.file_name}` : '';
+    setSubmittingReview(prev => ({ ...prev, [task.id]: true }));
+    try {
+      const created = await addNotification({
+        type: 'review',
+        title: 'Task submitted for review',
+        sub: `${memberName} submitted "${task.title}" for review.${fileLine}`,
+        taskId: task.id,
+        workspaceId: workspace.id,
+        userId: leader.id
+      });
+
+      if (!created) return;
+
+      try {
+        localStorage.setItem(`synctask:review:${task.id}`, new Date().toISOString());
+      } catch {
+        // non-fatal: notification row is the source of truth
+      }
+      logActivity({
+        type: 'task',
+        title: 'Submitted for review',
+        sub: `"${task.title}"`
+      });
+      push('Submitted for review', 'success');
+    } catch (err) {
+      console.error('[tasks] submit for review failed:', describeSupabaseError(err), err);
+      push(describeSupabaseError(err), 'error');
+    } finally {
+      setSubmittingReview(prev => ({ ...prev, [task.id]: false }));
+    }
   }
 
   async function handleNotify(task) {
@@ -147,10 +253,10 @@ export default function Tasks() {
 
     logActivity({
       type: 'task',
-      title: 'Reminder sent',
+      title: 'Notification sent',
       sub: `To ${who} · "${task.title}"`
     });
-    push(`Reminder sent to ${who}`, 'success');
+    push(`Notification sent to ${who}.`, 'success');
   }
 
   async function confirmDelete() {
@@ -349,10 +455,10 @@ export default function Tasks() {
                               <div className="task-meta-value">{task.group_name}</div>
                             </div>
                             <div className="task-meta-assignee">
-                              <Avatar name={assignee?.full_name || '?'} size="sm" />
+                              <Avatar name={assignee?.full_name || 'Unassigned'} size="sm" />
                               <div>
-                                <div className="task-meta-label">Assigned By</div>
-                                <div className="task-meta-value">You</div>
+                                <div className="task-meta-label">Assigned To</div>
+                                <div className="task-meta-value">{assignee?.full_name || 'Unassigned'}</div>
                               </div>
                             </div>
                           </div>
@@ -370,8 +476,28 @@ export default function Tasks() {
                             </div>
                           </div>
                           <div className="task-side-buttons">
-                            <button className="task-btn" onClick={() => handleNotify(task)}>Notify</button>
-                            <button className="task-btn" onClick={() => setTaskToDelete(task)}>Delete</button>
+                            {canManageTasks && (
+                              <button className="task-btn" onClick={() => handleNotify(task)}>Notify</button>
+                            )}
+                            {canManageTasks && (
+                              <button className="task-btn" onClick={() => setTaskToDelete(task)}>Delete</button>
+                            )}
+                            {!canManageTasks && user && task.assigned_to === user.id && (() => {
+                              const submitted = isSubmittedForReview(task.id);
+                              const reason = submitDisabledReason(task);
+                              const busy = !!submittingReview[task.id];
+                              const disabled = busy || submitted || !canSubmitForReview(task);
+                              return (
+                                <button
+                                  className="task-btn"
+                                  onClick={() => handleSubmitForReview(task)}
+                                  disabled={disabled}
+                                  title={reason || undefined}
+                                >
+                                  {submitted ? 'Submitted for review' : busy ? 'Submitting…' : 'Submit for Review'}
+                                </button>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>

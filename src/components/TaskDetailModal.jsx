@@ -13,9 +13,11 @@ import { describeSupabaseError } from '../utils/errors';
 import './TaskDetailModal.css';
 
 export default function TaskDetailModal({ open, task, onClose }) {
-  const { members, updateTask, deleteTask } = useWorkspace();
+  const { members, updateTask, deleteTask, role } = useWorkspace();
   const { push } = useToast();
   const { logActivity } = useActivity();
+  const actorRole = String(role || 'member').toLowerCase();
+  const isPrivileged = actorRole === 'owner' || actorRole === 'admin' || actorRole === 'leader';
 
   const [form, setForm] = useState({
     title: '',
@@ -68,6 +70,11 @@ export default function TaskDetailModal({ open, task, onClose }) {
 
     setSaving(true);
     try {
+      // Members are view-only; only owners/leaders reach this call.
+      // RLS (tasks_update_owner) is the final authority.
+      if (!isPrivileged) {
+        throw new Error('Only the workspace owner can update tasks.');
+      }
       await updateTask(task.id, form);
     } catch (err) {
       // Keep the modal open so the real failure is visible and retryable.
@@ -185,6 +192,7 @@ export default function TaskDetailModal({ open, task, onClose }) {
                 label="Assigned to"
                 value={form.assigned_to || ''}
                 onChange={(e) => set('assigned_to', e.target.value || null)}
+                disabled={!isPrivileged}
               >
                 <option value="">Unassigned</option>
                 {members.map(m => (
@@ -206,21 +214,32 @@ export default function TaskDetailModal({ open, task, onClose }) {
                     type="button"
                     className={`task-status-pill ${form.status === s.key ? 'active' : ''}`}
                     onClick={() => set('status', s.key)}
+                    disabled={!isPrivileged}
+                    aria-disabled={!isPrivileged}
+                    title={isPrivileged ? undefined : 'Only the workspace owner can update status'}
                   >
                     {s.label}
                   </button>
                 ))}
               </div>
+              {!isPrivileged && (
+                <p className="muted" style={{ margin: '8px 0 0' }}>
+                  Status is read-only for members. Current status: {
+                    form.status === 'completed' ? 'Completed'
+                    : form.status === 'in_progress' ? 'In Progress' : 'Not Started'
+                  }.
+                </p>
+              )}
             </div>
           </div>
 
           <div className="task-detail-footer">
-            <Button variant="danger" onClick={() => setConfirmDelete(true)}>
+            <Button variant="danger" onClick={() => setConfirmDelete(true)} disabled={!isPrivileged}>
               Delete
             </Button>
             <div className="row gap-12">
               <Button variant="secondary" onClick={onClose}>Cancel</Button>
-              <Button variant="primary" onClick={handleSave} disabled={saving}>
+              <Button variant="primary" onClick={handleSave} disabled={saving || !isPrivileged}>
                 {saving ? 'Saving…' : 'Save Changes'}
               </Button>
             </div>

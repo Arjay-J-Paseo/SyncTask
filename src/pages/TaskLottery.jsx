@@ -60,46 +60,9 @@ export default function TaskLottery() {
     );
   }, [lotteryTasks, difficultyFilter]);
 
-  // Compute contributions per member from completed tasks
-  const contributions = useMemo(() => {
-    const counts = {};
-    tasks.forEach(t => {
-      if (t.status === 'completed' && t.assigned_to) {
-        counts[t.assigned_to] = (counts[t.assigned_to] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [tasks]);
-
-  // Compute workload per member (active tasks assigned to them)
-  const workloadByMember = useMemo(() => {
-    const workload = {};
-    members.forEach(m => {
-      workload[m.id] = tasks.filter(
-        t => t.assigned_to === m.id && t.status !== 'completed'
-      ).length;
-    });
-    return workload;
-  }, [members, tasks]);
-
-  // Fairness score: lower = more fair to assign
-  // = contributions (weight 2) + workload (weight 1)
-  function fairnessScore(member) {
-    const contributionsCount = contributions[member.id] || 0;
-    const workloadCount = workloadByMember[member.id] || 0;
-    return contributionsCount * 2 + workloadCount;
-  }
-
-  const membersSorted = useMemo(() => {
-    return [...activeMembers].sort((a, b) => fairnessScore(a) - fairnessScore(b));
-  }, [activeMembers, contributions, workloadByMember]);
-
-  const minScore = membersSorted.length ? fairnessScore(membersSorted[0]) : 0;
-  const topCandidates = membersSorted.filter(m => fairnessScore(m) === minScore);
-
-  function pickFairMember() {
-    // Random pick among tied candidates
-    return topCandidates[Math.floor(Math.random() * topCandidates.length)];
+  // True uniform random draw from all eligible active members.
+  function pickRandomMember() {
+    return activeMembers[Math.floor(Math.random() * activeMembers.length)];
   }
 
   function handleDraw() {
@@ -116,8 +79,8 @@ export default function TaskLottery() {
     setResult(null);
     setAssigned(false);
 
-    // Shuffle animation — cycle through names
-    const winner = pickFairMember();
+    // Shuffle animation — cycle through names (visual only, does not pick the winner)
+    const winner = pickRandomMember();
     const shuffleInterval = setInterval(() => {
       const random = activeMembers[Math.floor(Math.random() * activeMembers.length)];
       setShuffleName(random.full_name);
@@ -130,7 +93,7 @@ export default function TaskLottery() {
       setResult({
         task: selectedTask,
         member: winner,
-        reason: winner.full_name + ' has the fairest score — fewer contributions and lower workload.'
+        reason: winner.full_name + ` was picked at random from ${activeMembers.length} eligible member${activeMembers.length === 1 ? '' : 's'}.`
       });
     }, 1600);
   }
@@ -215,13 +178,6 @@ export default function TaskLottery() {
             <div className="lottery-result-row">
               <div className="lottery-result-label">Reason</div>
               <div className="lottery-result-value">{result.reason}</div>
-            </div>
-
-            <div className="lottery-result-row">
-              <div className="lottery-result-label">Fairness score</div>
-              <div className="lottery-result-value">
-                {fairnessScore(result.member)} (lower is more fair)
-              </div>
             </div>
           </div>
 
@@ -337,25 +293,20 @@ export default function TaskLottery() {
               <div className="lottery-empty">
                 No active workspace members are available for selection.
               </div>
-            ) : membersSorted.map(m => {
-              const score = fairnessScore(m);
-              const isTop = score === minScore;
+            ) : activeMembers.map(m => {
               const isShuffling = drawing && shuffleName === m.full_name;
               return (
                 <div
                   key={m.id}
-                  className={`lottery-member-row ${isTop ? 'top-candidate' : ''} ${isShuffling ? 'shuffling' : ''}`}
+                  className={`lottery-member-row${isShuffling ? ' shuffling' : ''}`}
                 >
                   <Avatar name={m.full_name} size="md" />
                   <div className="lottery-member-main">
                     <div className="lottery-member-name">{m.full_name}</div>
                     <div className="lottery-member-sub">
-                      {contributions[m.id] || 0} contributions · {workloadByMember[m.id] || 0} active tasks
+                      Eligible for random draw
                     </div>
                   </div>
-                  {isTop && !drawing && (
-                    <span className="lottery-priority">Priority</span>
-                  )}
                 </div>
               );
             })}
@@ -385,7 +336,7 @@ export default function TaskLottery() {
 
       {drawing && (
         <div className="lottery-shuffle">
-          <div className="lottery-shuffle-label">Picking fairest member…</div>
+          <div className="lottery-shuffle-label">Picking random member…</div>
           <div className="lottery-shuffle-name">{shuffleName || '…'}</div>
         </div>
       )}
