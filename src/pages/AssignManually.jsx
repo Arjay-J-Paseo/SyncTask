@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../context/MockWorkspaceContext';
 import { useAuth } from '../context/AuthContext';
@@ -24,21 +24,32 @@ export default function AssignManually() {
   const [group, setGroup] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('medium');
+  const [assignmentMode, setAssignmentMode] = useState('assign');
   const [selectedMember, setSelectedMember] = useState(null);
   const [search, setSearch] = useState('');
   const [assigned, setAssigned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const submitLock = useRef(false);
 
   const filtered = members.filter(m => m.full_name.toLowerCase().includes(search.toLowerCase()));
-  const canPreview = title && description && selectedMember && dueDate;
+  const selectedMemberExists = members.some(member => member.id === selectedMember);
+  const canPreview = title.trim() && description.trim() && dueDate
+    && (assignmentMode === 'unassigned' || selectedMemberExists);
 
   async function handleSubmit() {
-    if (!canPreview) {
-      push('Fill in Title, Description, Due Date, and pick a member', 'error');
+    if (submitLock.current || submitting) return;
+    if (!title.trim() || !description.trim() || !dueDate
+      || (assignmentMode === 'assign' && !selectedMemberExists)) {
+      push(
+        assignmentMode === 'assign'
+          ? 'Fill in Title, Description, Due Date, and choose a valid member'
+          : 'Fill in Title, Description, and Due Date',
+        'error'
+      );
       return;
     }
-    if (submitting) return;
 
+    submitLock.current = true;
     setSubmitting(true);
 
     try {
@@ -51,19 +62,23 @@ export default function AssignManually() {
         due_date: dueDate,
         priority,
         status: 'not_started',
-        assigned_to: selectedMember,
+        assigned_to: assignmentMode === 'unassigned' ? null : selectedMember,
         assigned_by: user.id
       });
 
       if (error) throw error;
 
-      await refresh();
+      const refreshResult = await refresh();
+      if (!refreshResult?.ok) {
+        throw refreshResult?.error || new Error('The task was created but the task list could not be refreshed.');
+      }
       setAssigned(true);
-      push('Task assigned!', 'success');
+      push(assignmentMode === 'unassigned' ? 'Task created unassigned!' : 'Task assigned!', 'success');
     } catch (err) {
       console.error('[assignManually] task insert failed:', describeSupabaseError(err), err);
       push(describeSupabaseError(err), 'error');
     } finally {
+      submitLock.current = false;
       setSubmitting(false);
     }
   }
@@ -96,20 +111,33 @@ export default function AssignManually() {
       </div>
 
       <div className="card" style={{ marginTop: 20 }}>
-        <div className="card-header bordered"><div className="card-title">Choose Team Members</div></div>
+        <div className="card-header bordered"><div className="card-title">Assignment</div></div>
         <div className="card-body">
-          <input className="input" placeholder="Search" value={search}
-            onChange={e => setSearch(e.target.value)} style={{ marginBottom: 14 }} />
-          <div className="member-pick-list">
-            {filtered.map(m => (
-              <button key={m.id} type="button" className="member-pick-row"
-                onClick={() => setSelectedMember(m.id)}>
-                <Avatar name={m.full_name} size="md" />
-                <span className="member-pick-name">{m.full_name}</span>
-                <span className={`member-pick-radio ${selectedMember === m.id ? 'picked' : ''}`} />
-              </button>
-            ))}
-          </div>
+          <Select label="Assign task" value={assignmentMode} onChange={e => setAssignmentMode(e.target.value)}>
+            <option value="assign">Assign to a member</option>
+            <option value="unassigned">Leave unassigned</option>
+          </Select>
+
+          {assignmentMode === 'assign' ? (
+            <>
+              <input className="input" placeholder="Search" value={search}
+                onChange={e => setSearch(e.target.value)} style={{ margin: '14px 0' }} />
+              <div className="member-pick-list">
+                {filtered.map(m => (
+                  <button key={m.id} type="button" className="member-pick-row"
+                    onClick={() => setSelectedMember(m.id)}>
+                    <Avatar name={m.full_name} size="md" />
+                    <span className="member-pick-name">{m.full_name}</span>
+                    <span className={`member-pick-radio ${selectedMember === m.id ? 'picked' : ''}`} />
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="muted" style={{ margin: '14px 0 0' }}>
+              This task will be available for Smart Task Lottery.
+            </p>
+          )}
         </div>
       </div>
 
@@ -118,10 +146,15 @@ export default function AssignManually() {
         <div className="card-body">
           {assigned ? (
             <>
-              <div className="assign-success">Task successfully assigned!</div>
+              <div className="assign-success">
+                {assignmentMode === 'unassigned' ? 'Task created and left unassigned.' : 'Task successfully assigned!'}
+              </div>
               <ul className="assign-result-list">
                 <li><strong>Task Title :</strong> {title}</li>
-                <li><strong>Assigned Member :</strong> {members.find(m => m.id === selectedMember)?.full_name}</li>
+                <li>
+                  <strong>{assignmentMode === 'unassigned' ? 'Assignment' : 'Assigned Member'} :</strong>{' '}
+                  {assignmentMode === 'unassigned' ? 'Unassigned' : members.find(m => m.id === selectedMember)?.full_name}
+                </li>
                 <li><strong>Group :</strong> {group}</li>
                 <li><strong>Due Date :</strong> {dueDate}</li>
                 <li><strong>Priority :</strong> {priority.charAt(0).toUpperCase() + priority.slice(1)}</li>
@@ -130,7 +163,10 @@ export default function AssignManually() {
           ) : canPreview ? (
             <ul className="assign-result-list">
               <li><strong>Task Title :</strong> {title}</li>
-              <li><strong>Assigned Member :</strong> {members.find(m => m.id === selectedMember)?.full_name}</li>
+              <li>
+                <strong>{assignmentMode === 'unassigned' ? 'Assignment' : 'Assigned Member'} :</strong>{' '}
+                {assignmentMode === 'unassigned' ? 'Unassigned' : members.find(m => m.id === selectedMember)?.full_name}
+              </li>
               <li><strong>Group :</strong> {group}</li>
               <li><strong>Due Date :</strong> {dueDate}</li>
               <li><strong>Priority :</strong> {priority.charAt(0).toUpperCase() + priority.slice(1)}</li>
