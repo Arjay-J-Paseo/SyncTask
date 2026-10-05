@@ -109,7 +109,7 @@ export default function CreateWorkspace() {
       </header>
 
       <div className="ob-split-layout">
-        <form className="ob-form-card" onSubmit={handleSubmit} noValidate>
+        <form className="ob-form-card ob-create-form" onSubmit={handleSubmit} noValidate>
           <div className="ob-field">
             <label htmlFor="workspace-name">Workspace name</label>
             <input
@@ -165,6 +165,8 @@ export default function CreateWorkspace() {
                 const active = teamSize === size;
                 return (
                   <label key={size} className="ob-size-choice">
+                    {size === '15-50' && <small className="ob-size-tag">Plus</small>}
+                    {size === '50-150' && <small className="ob-size-tag">Pro</small>}
                     <input
                       type="radio"
                       name="teamSize"
