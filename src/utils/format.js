@@ -24,3 +24,26 @@ export function formatRelative(iso) {
   if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
   return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+/**
+ * Determine if a member is currently online based on last_active_at.
+ * A member is considered online if they were active within the last 5 minutes.
+ * This is a heuristic — it can be stale when the app is closed.
+ */
+export function isOnline(lastActiveAt) {
+  if (!lastActiveAt) return false;
+  const lastActive = new Date(lastActiveAt);
+  if (Number.isNaN(lastActive.getTime())) return false;
+  const now = new Date();
+  const diffMinutes = (now - lastActive) / (1000 * 60);
+  return diffMinutes >= 0 && diffMinutes <= 5;
+}
+
+/**
+ * Format a human-readable "last active" string.
+ * Returns 'Online' when isOnline is true, otherwise a relative time.
+ */
+export function formatPresence(lastActiveAt) {
+  if (isOnline(lastActiveAt)) return 'Online';
+  return formatRelative(lastActiveAt) || 'Offline';
+}

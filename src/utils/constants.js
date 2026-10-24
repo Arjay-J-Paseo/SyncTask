@@ -7,11 +7,12 @@ export const TEAM_TYPES = [
 
 export const TEAM_SIZES = ['1-5', '6-15', '15-50', '50-150'];
 
-export const TEAM_SIZE_PLANS = {
-  '1-5':    { plan: 'Free', required: false },
-  '6-15':   { plan: 'Free', required: false },
-  '15-50':  { plan: 'Plus', required: true  },
-  '50-150': { plan: 'Pro',  required: true  }
-};
+export const INCLUDED_WORKSPACE_STORAGE_BYTES = 500 * 1024 * 1024;
+
+export const STORAGE_ADD_ONS = [
+  { extraBytes: 2 * 1024 ** 3, price: 19 },
+  { extraBytes: 5 * 1024 ** 3, price: 39 },
+  { extraBytes: 10 * 1024 ** 3, price: 69 }
+];
 
 export const PRIORITIES = ['low', 'medium', 'high'];

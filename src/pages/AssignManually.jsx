@@ -17,7 +17,9 @@ export default function AssignManually() {
   const navigate = useNavigate();
   const { push } = useToast();
   const { user } = useAuth();
-  const { workspace, members, refresh } = useWorkspace();
+  const { workspace, members, role, refresh } = useWorkspace();
+  const actorRole = String(role || 'member').toLowerCase();
+  const canManageTasks = actorRole === 'owner' || actorRole === 'admin' || actorRole === 'leader';
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -37,6 +39,10 @@ export default function AssignManually() {
     && (assignmentMode === 'unassigned' || selectedMemberExists);
 
   async function handleSubmit() {
+    if (!canManageTasks) {
+      push('Only the workspace owner, admin, or leader can create tasks.', 'error');
+      return;
+    }
     if (submitLock.current || submitting) return;
     if (!title.trim() || !description.trim() || !dueDate
       || (assignmentMode === 'assign' && !selectedMemberExists)) {
@@ -81,6 +87,19 @@ export default function AssignManually() {
       submitLock.current = false;
       setSubmitting(false);
     }
+  }
+
+  if (!canManageTasks) {
+    return (
+      <div>
+        <div className="page-head">
+          <div className="page-eyebrow">Task</div>
+          <h1 className="page-title">Task creation unavailable</h1>
+          <p className="page-sub">Only the workspace owner, admin, or leader can create tasks.</p>
+        </div>
+        <Button variant="secondary" onClick={() => navigate('/tasks')}>Back to Tasks</Button>
+      </div>
+    );
   }
 
   return (

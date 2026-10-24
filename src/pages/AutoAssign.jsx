@@ -19,8 +19,10 @@ export default function AutoAssign() {
   const navigate = useNavigate();
   const { push } = useToast();
   const { user } = useAuth();
-  const { workspace, members, refresh } = useWorkspace();
+  const { workspace, members, role, refresh } = useWorkspace();
   const { logActivity } = useActivity();
+  const actorRole = String(role || 'member').toLowerCase();
+  const canManageTasks = actorRole === 'owner' || actorRole === 'admin' || actorRole === 'leader';
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -46,6 +48,10 @@ export default function AutoAssign() {
   const canPreview = title && description && selectedMember && dueDate;
 
   async function handleSubmit() {
+    if (!canManageTasks) {
+      push('Only the workspace owner, admin, or leader can create tasks.', 'error');
+      return;
+    }
     if (!canPreview) {
       push('Fill in the fields and generate an assignee', 'error');
       return;
@@ -85,6 +91,19 @@ export default function AutoAssign() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (!canManageTasks) {
+    return (
+      <div>
+        <div className="page-head">
+          <div className="page-eyebrow">Task</div>
+          <h1 className="page-title">Task creation unavailable</h1>
+          <p className="page-sub">Only the workspace owner, admin, or leader can create tasks.</p>
+        </div>
+        <Button variant="secondary" onClick={() => navigate('/tasks')}>Back to Tasks</Button>
+      </div>
+    );
   }
 
   return (

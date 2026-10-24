@@ -4,7 +4,7 @@ import { formatDate } from '../utils/format';
 
 export default function WorkspaceInfoModal({ open }) {
   const { workspace, role, members, inviteCode } = useWorkspace();
-  const roleLabel = role === 'admin' ? 'Admin' : role === 'owner' ? 'Owner' : 'Member';
+  const roleLabel = role === 'admin' ? 'Admin' : role === 'owner' ? 'Owner' : role === 'leader' ? 'Leader' : 'Member';
   const createdAt = workspace?.created_at ? new Date(workspace.created_at) : null;
   const createdLabel = createdAt && !Number.isNaN(createdAt.getTime())
     ? formatDate(workspace.created_at)

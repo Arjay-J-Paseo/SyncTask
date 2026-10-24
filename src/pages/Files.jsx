@@ -8,6 +8,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import { IconUpload, IconFile, IconTrash } from '../components/icons';
 import { formatBytes, formatRelative } from '../utils/format';
 import { describeSupabaseError } from '../utils/errors';
+import { INCLUDED_WORKSPACE_STORAGE_BYTES } from '../utils/constants';
 import './Files.css';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -66,7 +67,8 @@ export default function Files() {
   const previewRequest = useRef(0);
 
   const usedBytes = files.reduce((sum, f) => sum + (f.size_bytes || 0), 0);
-  const limitBytes = workspace?.storage_limit_bytes || 1073741824;
+  const limitBytes = INCLUDED_WORKSPACE_STORAGE_BYTES;
+  const remainingBytes = Math.max(0, limitBytes - usedBytes);
   const pct = Math.min(100, Math.round((usedBytes / limitBytes) * 100));
 
   async function openPreview(file) {
@@ -115,6 +117,7 @@ export default function Files() {
     setUploading(true);
     let successCount = 0;
     const errors = [];
+    let projectedUsedBytes = usedBytes;
 
     try {
       for (const file of arr) {
@@ -141,8 +144,14 @@ export default function Files() {
           continue;
         }
 
+        if (file.size > limitBytes - projectedUsedBytes) {
+          errors.push(`${file.name}: This upload would exceed the workspace's remaining storage. Remove older files or contact a workspace leader.`);
+          continue;
+        }
+
         try {
           await uploadFile(file);
+          projectedUsedBytes += file.size;
           logActivity({
             type: 'file',
             title: 'File uploaded',
@@ -250,30 +259,27 @@ export default function Files() {
       </div>
 
       <div className="files-top">
-        <div
-          className={`card files-dropzone ${dragging ? 'dragging' : ''}`}
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
-        >
-          <div className="card-body" style={{ textAlign: 'center', padding: '40px 24px' }}>
+        <div className="card files-upload-panel">
+          <h2 className="files-upload-heading">UPLOAD FILES</h2>
+          <div
+            className={`files-dropzone ${dragging ? 'dragging' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+          >
             <div className="files-upload-icon">
-              <IconUpload style={{ width: 40, height: 40, color: '#fff' }} />
+              <IconUpload style={{ width: 40, height: 40, color: '#8B5CF6' }} />
             </div>
-            <div className="files-upload-title">
-              {uploading ? 'Uploading…' : 'Upload your first file'}
-            </div>
-            <p className="muted" style={{ marginBottom: 16 }}>
-              Drag and drop files here, or click to browse.
-            </p>
+            <div className="files-upload-title">Drag &amp; Drop your files here</div>
+            <p className="files-upload-or">OR</p>
             <Button
               variant="primary"
               onClick={() => inputRef.current && inputRef.current.click()}
               disabled={uploading}
             >
-              {uploading ? 'Uploading…' : 'Browse files'}
+              {uploading ? 'Uploading…' : 'Browse Files'}
             </Button>
-            <p className="muted-2 mt-16" style={{ fontSize: 12.5 }}>
+            <p className="muted-2 files-upload-hint" style={{ fontSize: 12.5 }}>
               Allowed: PDF, Word, Excel, PowerPoint, CSV, TXT, ZIP, PNG, JPG, GIF, WebP (max 100 MB). File checks do not scan image content.
             </p>
             <input
@@ -299,7 +305,7 @@ export default function Files() {
               </span>
             </div>
             <span className="muted" style={{ fontSize: 13 }}>
-              {formatBytes(usedBytes)} of {formatBytes(limitBytes)}
+              {formatBytes(usedBytes)} used of {formatBytes(limitBytes)} · {formatBytes(remainingBytes)} remaining
             </span>
           </div>
           <div className="card-body">
@@ -308,6 +314,9 @@ export default function Files() {
             </div>
             <div className="files-meter-label">
               {files.length} file{files.length === 1 ? '' : 's'}
+              {remainingBytes === 0
+                ? ' · Workspace storage is full. Contact a workspace leader about storage options.'
+                : pct >= 90 ? ' · Workspace storage is almost full.' : ''}
             </div>
           </div>
         </div>

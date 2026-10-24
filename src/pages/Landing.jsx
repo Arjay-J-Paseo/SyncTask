@@ -6,7 +6,6 @@ import './Landing.css';
 export default function Landing() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dialogPlan, setDialogPlan] = useState(null);
   const [insightsOpen, setInsightsOpen] = useState(false);
 
   useEffect(() => {
@@ -25,14 +24,6 @@ export default function Landing() {
     els.forEach(el => observer.observe(el));
     return () => observer.disconnect();
   }, []);
-
-  function openDialog(plan) {
-    setDialogPlan(plan);
-  }
-
-  function closeDialog() {
-    setDialogPlan(null);
-  }
 
   function closeMobileMenu() {
     setMenuOpen(false);
@@ -80,7 +71,7 @@ export default function Landing() {
                 Bring your tasks, team, and tools together. Know what's moving — and what needs a little attention.
               </p>
               <div className="actions">
-                <button className="button" onClick={() => openDialog('Starter')}>
+                <button className="button" onClick={() => navigate('/signup')}>
                   Get started free
                 </button>
                 <a className="button white" href="#features">
@@ -190,54 +181,23 @@ export default function Landing() {
         </section>
 
         <section className="pricing wrap lv2-reveal" id="pricing">
-          <p className="eyebrow">For every kind of team</p>
-          <h2>Start small. Grow together.</h2>
-
+          <p className="eyebrow">Simple workspace storage</p>
+          <h2>One shared storage pool for your team.</h2>
           <div className="pricing-grid">
             <article className="plan">
-              <h3>Starter</h3>
-              <p>For everyday plans.</p>
-              <div className="price">Free</div>
-              <ul>
-                <li>Up to 10 members</li>
-                <li>5 active projects</li>
-                <li>10 GB storage</li>
-                <li>Basic task management</li>
-                <li>Community support</li>
-              </ul>
-              <button className="button outline" onClick={() => openDialog('Starter')}>
-                Get started free
-              </button>
+              <h3>Included</h3><p>Included with every workspace.</p><div className="price">Free</div>
+              <ul><li>500 MB shared workspace storage</li><li>Tasks and team features</li><li>One shared storage pool</li></ul>
+              <button className="button outline" onClick={() => navigate('/signup')}>Get started free</button>
             </article>
-
             <article className="plan featured">
-              <h3>Plus</h3>
-              <p>For growing teams.</p>
-              <div className="price">₱109<span> / month</span></div>
-              <ul>
-                <li>Up to 50 members</li>
-                <li>20 active projects</li>
-                <li>50 GB storage</li>
-                <li>Advanced analytics</li>
-                <li>Custom project workflows</li>
-              </ul>
-              <button className="button" onClick={() => openDialog('Plus')}>Choose Plus</button>
+              <h3>Extra 2 GB</h3><p>Proposed demo add-on.</p><div className="price">&#8369;19<span> / month</span></div>
+              <ul><li>2 GB extra shared storage</li><li>Available to the whole workspace</li><li>No feature or member paywalls</li></ul>
+              <button className="button" onClick={() => navigate('/plans')}>View storage options</button>
             </article>
-
             <article className="plan">
-              <h3>Pro</h3>
-              <p>For bigger goals.</p>
-              <div className="price">₱199<span> / month</span></div>
-              <ul>
-                <li>Up to 100 members</li>
-                <li>100 active projects</li>
-                <li>100 GB storage</li>
-                <li>Custom integrations</li>
-                <li>Account-wide insights</li>
-              </ul>
-              <button className="button outline" onClick={() => openDialog('Pro')}>
-                Explore Pro
-              </button>
+              <h3>Extra 5 GB / 10 GB</h3><p>Proposed demo add-ons.</p><div className="price">&#8369;39 / &#8369;69<span> / month</span></div>
+              <ul><li>Choose 5 GB or 10 GB extra</li><li>Shared workspace storage</li><li>Demo pricing; checkout unavailable</li></ul>
+              <button className="button outline" onClick={() => navigate('/plans')}>View storage options</button>
             </article>
           </div>
         </section>
@@ -246,7 +206,7 @@ export default function Landing() {
           <div className="wrap">
             <h2>Your next great project starts here.</h2>
             <p>Give your team a shared place to make it happen.</p>
-            <button className="button" onClick={() => openDialog('Starter')}>
+            <button className="button" onClick={() => navigate('/signup')}>
               Get started free
             </button>
           </div>
@@ -268,22 +228,6 @@ export default function Landing() {
         </button>
       </footer>
 
-      {dialogPlan && (
-        <div className="plan-dialog-backdrop" onClick={closeDialog}>
-          <div className="plan-dialog" onClick={(e) => e.stopPropagation()}>
-            <button className="close" aria-label="Close dialog" onClick={closeDialog}>×</button>
-            <p className="eyebrow">Let's get organized</p>
-            <h2>Your {dialogPlan} plan</h2>
-            <p>Your selected plan is ready to connect to a signup or checkout service.</p>
-            <button
-              className="button close-dialog"
-              onClick={() => dialogPlan === 'Starter' ? navigate('/login') : closeDialog()}
-            >
-              {dialogPlan === 'Starter' ? 'Continue to Login' : 'Continue exploring'}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

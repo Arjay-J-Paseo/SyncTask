@@ -165,8 +165,6 @@ export default function CreateWorkspace() {
                 const active = teamSize === size;
                 return (
                   <label key={size} className="ob-size-choice">
-                    {size === '15-50' && <small className="ob-size-tag">Plus</small>}
-                    {size === '50-150' && <small className="ob-size-tag">Pro</small>}
                     <input
                       type="radio"
                       name="teamSize"

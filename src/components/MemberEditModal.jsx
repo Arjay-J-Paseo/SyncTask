@@ -54,7 +54,7 @@ export default function MemberEditModal({ open, member, onClose, onSave, onRemov
               onChange={(e) => setRole(e.target.value)}
               disabled={isOwner}
             >
-              <option value="member">Member — can view and edit tasks</option>
+              <option value="member">Member — can view tasks and submit assigned work for review</option>
               <option value="admin">Admin — can manage workspace</option>
               <option value="owner">Owner — full control</option>
             </Select>

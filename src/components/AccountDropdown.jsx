@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Avatar from './ui/Avatar';
 import {
@@ -14,14 +14,13 @@ export default function AccountDropdown({
   onLeaveWorkspace
 }) {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const items = [
     { icon: <IconUser />,  title: 'Account Setting',      sub: 'Edit your profile, email, and password', onClick: onOpenProfile },
     { icon: <IconUsers />, title: 'Workspace Setting',    sub: 'View workspace details',                 onClick: onOpenWorkspace },
     { icon: <IconBell />,  title: 'Notification Setting', sub: 'Choose what you want to be notified about', onClick: onOpenNotifSettings },
-    { icon: <IconUsers />, title: 'Help & Support',       sub: 'FAQs and safety information',              onClick: () => { navigate('/help'); onClose(); } },
-    { icon: <IconCrown />, title: 'Subscription',         sub: 'Manage your plan and usage',             onClick: () => { navigate('/plans'); onClose(); } }
+    { icon: <IconUsers />, title: 'Help & Support',       sub: 'FAQs and safety information',              to: '/help' },
+    { icon: <IconCrown />, title: 'Storage',              sub: 'View shared storage and demo add-ons',  to: '/plans' }
   ];
 
   return (
@@ -37,15 +36,23 @@ export default function AccountDropdown({
         </button>
       </div>
 
-      {items.map((it, i) => (
-        <button key={i} className="dropdown-item" onClick={it.onClick}>
-          <span className="dropdown-icon">{it.icon}</span>
-          <span className="dropdown-text">
-            <div className="dropdown-item-title">{it.title}</div>
-            <div className="dropdown-item-sub">{it.sub}</div>
-          </span>
-        </button>
-      ))}
+      {items.map((it, i) => {
+        const Item = it.to ? Link : 'button';
+        return (
+          <Item
+            key={i}
+            className="dropdown-item"
+            onClick={it.to ? onClose : it.onClick}
+            {...(it.to ? { to: it.to } : { type: 'button' })}
+          >
+            <span className="dropdown-icon">{it.icon}</span>
+            <span className="dropdown-text">
+              <div className="dropdown-item-title">{it.title}</div>
+              <div className="dropdown-item-sub">{it.sub}</div>
+            </span>
+          </Item>
+        );
+      })}
 
       <div className="dropdown-divider" />
 

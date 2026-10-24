@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { INCLUDED_WORKSPACE_STORAGE_BYTES } from '../utils/constants';
 import {
   collectQueryFailures,
   describeSupabaseError,
@@ -17,6 +18,8 @@ export function MockWorkspaceProvider({ children }) {
   const [members, setMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [files, setFiles] = useState([]);
+  const filesRef = useRef([]);
+  const uploadInProgressRef = useRef(false);
   const [vibes, setVibes] = useState([]);
   const [activity, setActivity] = useState([]);
   const [inviteCode, setInviteCode] = useState('');
@@ -38,6 +41,7 @@ export function MockWorkspaceProvider({ children }) {
       setMembers([]);
       setTasks([]);
       setFiles([]);
+      filesRef.current = [];
       setVibes([]);
       setActivity([]);
       setInviteCode('');
@@ -54,6 +58,7 @@ export function MockWorkspaceProvider({ children }) {
       setMembers([]);
       setTasks([]);
       setFiles([]);
+      filesRef.current = [];
       setVibes([]);
       setActivity([]);
       setInviteCode('');
@@ -101,6 +106,7 @@ export function MockWorkspaceProvider({ children }) {
         setMembers([]);
         setTasks([]);
         setFiles([]);
+        filesRef.current = [];
         setVibes([]);
         setActivity([]);
         setInviteCode('');
@@ -204,6 +210,7 @@ export function MockWorkspaceProvider({ children }) {
 
       setTasks(tasksRes.data || []);
       setFiles(filesRes.data || []);
+      filesRef.current = filesRes.data || [];
       setVibes(vibesRes.data || []);
       setActivity(activityRes.data || []);
       setInviteCode(codesRes.data?.[0]?.code || '');
@@ -286,13 +293,22 @@ export function MockWorkspaceProvider({ children }) {
   async function uploadFile(file) {
     if (!workspace) throw new Error('No workspace loaded');
     if (!user) throw new Error('Not signed in');
+    if (uploadInProgressRef.current) throw new Error('Another file upload is already in progress.');
 
     const MAX_SIZE = 100 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
       throw new Error('File is too large (max 100 MB per file)');
     }
 
-    const sameName = files.filter(f => f.file_name === file.name);
+    const usedBytes = filesRef.current.reduce((sum, item) => sum + (Number(item.size_bytes) || 0), 0);
+    const remainingBytes = Math.max(0, INCLUDED_WORKSPACE_STORAGE_BYTES - usedBytes);
+    if (file.size > remainingBytes) {
+      throw new Error('This upload would exceed the workspace storage limit. Remove older files or contact a workspace leader.');
+    }
+    uploadInProgressRef.current = true;
+
+    try {
+    const sameName = filesRef.current.filter(f => f.file_name === file.name);
     const nextVersion = sameName.length > 0
       ? Math.max(...sameName.map(f => f.version)) + 1
       : 1;
@@ -342,8 +358,12 @@ export function MockWorkspaceProvider({ children }) {
       throw insErr;
     }
 
-    setFiles(prev => [data, ...prev]);
+    filesRef.current = [data, ...filesRef.current];
+    setFiles(filesRef.current);
     return data;
+    } finally {
+      uploadInProgressRef.current = false;
+    }
   }
 
   async function getFileUrl(storagePath) {
@@ -397,7 +417,8 @@ export function MockWorkspaceProvider({ children }) {
         throw new Error(describeSupabaseError(databaseFailure));
       }
 
-      setFiles(list => list.filter(f => f.id !== id));
+      filesRef.current = filesRef.current.filter(f => f.id !== id);
+      setFiles(filesRef.current);
     } catch (err) {
       console.error('[workspace] deleteFile failed:', err);
       throw err;
@@ -427,7 +448,107 @@ export function MockWorkspaceProvider({ children }) {
     return data;
   }
 
+  /**
+   * Update the current user's last_active_at timestamp in workspace_members.
+   * This is a lightweight heartbeat — it does not change role or status.
+   * Only the current user can update their own presence; no one else can
+   * modify another member's presence through this function.
+   */
+  async function touchPresence() {
+    if (!workspace?.id || !user?.id) return;
+    try {
+      await supabase
+        .from('workspace_members')
+        .update({ last_active_at: new Date().toISOString() })
+        .eq('workspace_id', workspace.id)
+        .eq('user_id', user.id);
+    } catch (err) {
+      // Presence is best-effort. Never block the UI on a heartbeat failure.
+      console.error('[workspace] touchPresence failed:', describeSupabaseError(err), err);
+    }
+  }
+
+  /**
+   * Check for tasks that are at least 5 full days overdue and still incomplete.
+   * For each eligible task, notify the workspace leader (owner first, else first
+   * admin/leader member) with a suggestion to request a team meeting.
+   *
+   * Duplicate prevention: before inserting, query notifications for any existing
+   * row with type='overdue' and task_id matching (read or unread). If one
+   * exists, skip. This prevents re-alerting after the leader reads the
+   * notification.
+   *
+   * This runs only while SyncTask is open. It is idempotent and safe to call
+   * multiple times. There is no background scheduler, so alerts are NOT
+   * guaranteed while the app is closed.
+   */
+  async function checkOverdueTasks() {
+    if (!workspace || !user) return;
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
+    const cutoff = new Date(now.getTime() - fiveDaysMs);
+    cutoff.setHours(0, 0, 0, 0);
+    const cutoffISO = cutoff.toISOString().split('T')[0];
+
+    // Eligible: due_date <= cutoff AND status != 'completed'
+    const overdueTasks = tasks.filter(t =>
+      t.due_date &&
+      t.due_date <= cutoffISO &&
+      t.status !== 'completed'
+    );
+
+    if (overdueTasks.length === 0) return;
+
+    // Leader: workspace owner first, else first owner/admin/leader member.
+    const leader = members.find(m => m.id === workspace?.owner_id)
+      || members.find(m => ['owner', 'admin', 'leader'].includes(String(m.role || '').toLowerCase()));
+    if (!leader) return;
+
+    for (const task of overdueTasks) {
+      try {
+        // Duplicate prevention: check for any existing overdue notification
+        // for this task (read or unread). If one exists, skip.
+        // Using read=false alone would allow a second alert after the
+        // leader reads the first one.
+        const { data: existing, error: lookupErr } = await supabase
+          .from('notifications')
+          .select('id')
+          .eq('workspace_id', workspace.id)
+          .eq('task_id', task.id)
+          .eq('type', 'overdue')
+          .limit(1);
+
+        if (lookupErr) {
+          console.error('[workspace] overdue lookup failed for task', task.id, lookupErr);
+          continue;
+        }
+        if (existing && existing.length > 0) continue; // already notified
+
+        const overdueDays = Math.floor((now - new Date(task.due_date)) / (1000 * 60 * 60 * 24));
+        await supabase.from('notifications').insert({
+          user_id: leader.id,
+          workspace_id: workspace.id,
+          type: 'overdue',
+          title: 'Task overdue — consider a team meeting',
+          sub: `"${task.title}" is ${overdueDays} days overdue (due ${task.due_date}). Please review blockers and consider requesting a team meeting to redistribute work.`,
+          task_id: task.id,
+          read: false
+        });
+      } catch (err) {
+        console.error('[workspace] overdue notification failed for task', task.id, err);
+      }
+    }
+  }
+
   async function updateMember(id, updates) {
+    const actorRole = String(role || 'member').toLowerCase();
+    if (!['owner', 'admin', 'leader'].includes(actorRole)) {
+      throw new Error('Only the workspace owner, admin, or leader can update member roles.');
+    }
+
     const previous = members;
     setMembers(list => list.map(m => (m.id === id ? { ...m, ...updates } : m)));
     try {
@@ -448,6 +569,11 @@ export function MockWorkspaceProvider({ children }) {
   }
 
   async function removeMember(id) {
+    const actorRole = String(role || 'member').toLowerCase();
+    if (!['owner', 'admin', 'leader'].includes(actorRole)) {
+      throw new Error('Only the workspace owner, admin, or leader can remove members.');
+    }
+
     const previous = members;
     setMembers(list => list.filter(m => m.id !== id));
     try {
@@ -487,6 +613,7 @@ export function MockWorkspaceProvider({ children }) {
     setMembers([]);
     setTasks([]);
     setFiles([]);
+    filesRef.current = [];
     setVibes([]);
     setActivity([]);
     setInviteCode('');
@@ -520,8 +647,19 @@ export function MockWorkspaceProvider({ children }) {
     updateMember,
     removeMember,
     leaveWorkspace,
-    addVibe
+    addVibe,
+    checkOverdueTasks,
+    touchPresence
   };
+
+  // Heartbeat: update the current user's presence every 30 seconds.
+  // This is best-effort and never blocks the UI.
+  useEffect(() => {
+    if (!workspace?.id || !user?.id) return;
+    touchPresence();
+    const interval = setInterval(touchPresence, 30000);
+    return () => clearInterval(interval);
+  }, [workspace?.id, user?.id]);
 
   return (
     <WorkspaceContext.Provider value={value}>

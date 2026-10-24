@@ -69,14 +69,6 @@ function LoginRoute() {
 
   if (!user) return <AuthLayout><Login /></AuthLayout>;
 
-  let hasPlanSelection = false;
-  try {
-    hasPlanSelection = !!sessionStorage.getItem('synctask:selectedPlan');
-  } catch {
-    // Continue to the normal workspace route if session storage is unavailable.
-  }
-
-  if (hasPlanSelection) return <Navigate to="/plans" replace />;
   if (workspace) return <Navigate to="/dashboard" replace />;
 
   if (error) {

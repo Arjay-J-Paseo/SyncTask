@@ -93,7 +93,7 @@ export default function Tasks() {
 
   async function handleToggle(task) {
     if (!canManageTasks) {
-      push('Only the workspace owner can update task status.', 'error');
+      push('Only the workspace owner, admin, or leader can update task status.', 'error');
       return;
     }
     const newStatus = task.status === 'completed' ? 'not_started' : 'completed';
@@ -286,9 +286,11 @@ File: ${workFile.file_name}` : '';
         <div className="page-xeyebrow">Task</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <h1 className="page-title">Task Management</h1>
-          <Button variant="primary" onClick={() => navigate('/tasks/new/manual')}>
-            + Add Task
-          </Button>
+          {canManageTasks && (
+            <Button variant="primary" onClick={() => navigate('/tasks/new/manual')}>
+              + Add Task
+            </Button>
+          )}
         </div>
         <p className="page-sub">Assign project work, track progress, and keep everyone aligned.</p>
       </div>
@@ -346,14 +348,16 @@ File: ${workFile.file_name}` : '';
                   You can choose who should work on it, or let SyncTask randomly
                   assign the task to an available team member.
                 </p>
-                <div className="row gap-12" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Button variant="primary" size="lg" onClick={() => navigate('/tasks/new/manual')}>
-                    Create Task
-                  </Button>
-                  <Button variant="secondary" size="lg" onClick={() => navigate('/tasks/new/auto')}>
-                    <IconSparkles style={{ width: 18, height: 18 }} /> Auto-Assign Task
-                  </Button>
-                </div>
+                {canManageTasks && (
+                  <div className="row gap-12" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Button variant="primary" size="lg" onClick={() => navigate('/tasks/new/manual')}>
+                      Create Task
+                    </Button>
+                    <Button variant="secondary" size="lg" onClick={() => navigate('/tasks/new/auto')}>
+                      <IconSparkles style={{ width: 18, height: 18 }} /> Auto-Assign Task
+                    </Button>
+                  </div>
+                )}
                 <div className="tasks-or">
                   <span className="tasks-or-line" />
                   <span className="muted">or</span>

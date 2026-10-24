@@ -7,7 +7,7 @@ import { useWorkspace } from '../context/MockWorkspaceContext';
 export default function TopBar({ unreadCount = 0, onAvatarClick, onBellClick, onMenuClick }) {
   const { user } = useAuth();
   const { role } = useWorkspace();
-  const roleLabel = role === 'admin' ? 'Admin' : role === 'owner' ? 'Owner' : 'Member';
+  const roleLabel = role === 'admin' ? 'Admin' : role === 'owner' ? 'Owner' : role === 'leader' ? 'Leader' : 'Member';
 
   return (
     <header className="app-topbar">

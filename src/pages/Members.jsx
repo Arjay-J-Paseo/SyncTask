@@ -6,7 +6,7 @@ import Avatar from '../components/ui/Avatar';
 import MemberEditModal from '../components/MemberEditModal';
 import { SkeletonCards, SkeletonList } from '../components/ui/Skeleton';
 import { IconUsers, IconClock, IconCrown, IconLink, IconCopy } from '../components/icons';
-import { formatDate } from '../utils/format';
+import { formatDate, formatRelative } from '../utils/format';
 import { describeSupabaseError } from '../utils/errors';
 import { supabase } from '../lib/supabase';
 import './Members.css';
@@ -24,6 +24,15 @@ function getMemberStatusDisplay(status) {
   };
 }
 
+function isOnline(lastActiveAt) {
+  if (!lastActiveAt) return false;
+  const lastActive = new Date(lastActiveAt);
+  if (Number.isNaN(lastActive.getTime())) return false;
+  const now = new Date();
+  const diffMinutes = (now - lastActive) / (1000 * 60);
+  return diffMinutes >= 0 && diffMinutes <= 5;
+}
+
 export default function Members() {
   const { push } = useToast();
   const { workspace, members, inviteCode, role, updateMember, removeMember, refresh } = useWorkspace();
@@ -33,6 +42,13 @@ export default function Members() {
   const [generatingCode, setGeneratingCode] = useState(false);
   const memberWriteLock = useRef(false);
   const inviteCodeLock = useRef(false);
+
+  // Refresh online status every minute so the display stays current.
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (inviteCode) setCode(inviteCode);
@@ -45,7 +61,9 @@ export default function Members() {
 
   const activeCount = members.filter(m => m.status === 'active').length;
   const pendingCount = members.filter(m => m.status === 'pending').length;
-  const roleLabel = role === 'admin' ? 'Admin' : role === 'owner' ? 'Owner' : 'Member';
+  const onlineCount = members.filter(m => isOnline(m.last_active_at)).length;
+  const canManageMembers = ['owner', 'admin', 'leader'].includes(String(role || '').toLowerCase());
+  const roleLabel = role === 'admin' ? 'Admin' : role === 'owner' ? 'Owner' : role === 'leader' ? 'Leader' : 'Member';
 
   const inviteLink = `https://synctask.app/join/${code}`;
 
@@ -60,6 +78,7 @@ export default function Members() {
   }
 
   async function createNewCode() {
+    if (!canManageMembers) return;
     if (inviteCodeLock.current) return;
     if (!workspace?.id) {
       push('No active workspace is available for invite code generation.', 'error');
@@ -90,6 +109,7 @@ export default function Members() {
   }
 
   async function handleSaveMember(id, updates) {
+    if (!canManageMembers) return false;
     if (memberWriteLock.current) return false;
     memberWriteLock.current = true;
     try {
@@ -107,6 +127,7 @@ export default function Members() {
   }
 
   async function handleRemoveMember(id) {
+    if (!canManageMembers) return false;
     if (memberWriteLock.current) return false;
     memberWriteLock.current = true;
     try {
@@ -152,6 +173,12 @@ export default function Members() {
               <div><div className="kpi-label">Active members</div><div className="kpi-value">{activeCount}</div></div>
             </div>
             <div className="kpi">
+              <div className="kpi-icon" style={{ background: '#e0f2fe', color: '#0284c7' }}>
+                <span className="dot dot-active" style={{ background: '#0284c7', boxShadow: '0 0 0 3px rgba(2,132,199,0.25)' }} />
+              </div>
+              <div><div className="kpi-label">Online now</div><div className="kpi-value">{onlineCount}</div></div>
+            </div>
+            <div className="kpi">
               <div className="kpi-icon"><IconClock style={{ width: 22, height: 22 }} /></div>
               <div><div className="kpi-label">Pending invites</div><div className="kpi-value">{pendingCount}</div></div>
             </div>
@@ -169,41 +196,42 @@ export default function Members() {
               <div className="members-table">
                 <div className="members-head">
                   <span>Member</span><span>Role</span><span>Joined</span>
-                  <span>Last Active</span><span>Status</span>
+                  <span>Presence</span><span>Status</span>
                 </div>
-                {members.map(m => (
-                  <div
-                    key={m.id}
-                    className="members-row members-row-clickable"
-                    onClick={() => setEditingMember(m)}
-                  >
-                    <div className="members-cell-name">
-                      <Avatar name={m.full_name} size="sm" />
-                      <span>{m.full_name}</span>
+                {members.map(m => {
+                  const online = isOnline(m.last_active_at);
+                  const statusDisplay = getMemberStatusDisplay(m.status);
+                  return (
+                    <div
+                      key={m.id}
+                      className={`members-row ${canManageMembers ? 'members-row-clickable' : ''}`}
+                      onClick={canManageMembers ? () => setEditingMember(m) : undefined}
+                    >
+                      <div className="members-cell-name">
+                        <Avatar name={m.full_name} size="sm" />
+                        <span>{m.full_name}</span>
+                      </div>
+                      <div className="members-role">{m.role.charAt(0).toUpperCase() + m.role.slice(1)}</div>
+                      <div className="muted">{formatDate(m.joined_at)}</div>
+                      <div className="muted">
+                        <span className={`dot ${online ? 'dot-active' : 'dot-inactive'}`} style={{ marginRight: 4 }} />
+                        {online ? 'Online' : formatRelative(m.last_active_at) || 'Offline'}
+                      </div>
+                      <div>
+                        <span className={`dot ${statusDisplay.dotClass}`} />{' '}
+                        <span style={{ color: statusDisplay.color, fontWeight: 600, fontSize: 13 }}>
+                          {statusDisplay.label}
+                        </span>
+                      </div>
                     </div>
-                    <div className="members-role">{m.role.charAt(0).toUpperCase() + m.role.slice(1)}</div>
-                    <div className="muted">{formatDate(m.joined_at)}</div>
-                    <div className="muted">{formatDate(m.last_active_at)}</div>
-                    <div>
-                      {(() => {
-                        const statusDisplay = getMemberStatusDisplay(m.status);
-                        return (
-                          <>
-                            <span className={`dot ${statusDisplay.dotClass}`} />{' '}
-                            <span style={{ color: statusDisplay.color, fontWeight: 600, fontSize: 13 }}>
-                              {statusDisplay.label}
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            <div className="card">
-              <div className="card-body">
+            {canManageMembers && (
+              <div className="card">
+                <div className="card-body">
                 <IconLink style={{ width: 30, height: 30, color: 'var(--text)' }} />
                 <div className="h3 mt-12">Generate invite code</div>
                 <p className="muted mt-4" style={{ fontSize: 13.5 }}>
@@ -230,8 +258,9 @@ export default function Members() {
                 <Button variant="secondary" block onClick={createNewCode} disabled={generatingCode} style={{ marginTop: 10 }}>
                   {generatingCode ? 'Generating...' : 'Create New Code'}
                 </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </>
       )}

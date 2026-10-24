@@ -1,16 +1,69 @@
 .files-top { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
 
-.files-dropzone { transition: border-color 0.15s, background 0.15s; }
-.files-dropzone.dragging { border-color: var(--primary); background: var(--primary-soft); }
+.files-upload-panel { padding: 20px; }
+.files-upload-heading {
+  margin: 0 0 14px;
+  text-align: center;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.files-dropzone {
+  min-height: 250px;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #C4B5FD;
+  border-radius: 14px;
+  background: #F5F0FF;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.files-dropzone:hover:not(.dragging) {
+  border-color: #8B5CF6;
+  background: #F1EAFE;
+}
+.files-dropzone.dragging {
+  border-color: #7C3AED;
+  background: #EDE5FF;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
 
 .files-upload-icon {
-  width: 74px; height: 74px; border-radius: 14px;
-  background: #d5c7f2;
+  width: 56px; height: 56px; border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 16px;
+  margin: 0 auto 12px;
+}
+
+.files-dropzone .btn-primary {
+  background: #7C3AED;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(124, 58, 237, 0.24);
+}
+.files-dropzone .btn-primary:hover:not(:disabled) {
+  background: #6D28D9;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.25);
+}
+.files-dropzone.dragging .btn-primary:not(:disabled) {
+  background: #6D28D9;
 }
 
 .files-upload-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+.files-upload-or {
+  margin: 0 0 12px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.files-upload-hint { margin: 0 0 12px; }
+
+@media (max-width: 640px) {
+  .files-upload-panel { padding: 16px; }
+  .files-dropzone { min-height: 220px; padding: 24px 14px; }
+}
 
 .files-meter { height: 8px; background: #f0f0f3; border-radius: 999px; overflow: hidden; }
 .files-meter-fill { height: 100%; background: var(--accent); transition: width 0.3s; }

@@ -71,7 +71,7 @@ export default function TaskLottery() {
       return;
     }
     if (!activeMembers.length) {
-      push('No active workspace members are available for Task Lottery.', 'error');
+      push('No active members are available for Task Lottery.', 'error');
       return;
     }
 
@@ -213,7 +213,7 @@ export default function TaskLottery() {
           <div className="lottery-info-title">How Smart Task Lottery works</div>
           <div className="lottery-info-text">
             Pick a task, then draw. The lottery gives the fairest match based on
-            all-time completed task counts and current workload. Ties are broken randomly.
+            an eligible unassigned task and selects a random active workspace member.
           </div>
         </div>
       </div>

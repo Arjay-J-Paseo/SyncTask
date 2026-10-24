@@ -73,7 +73,7 @@ export default function TaskDetailModal({ open, task, onClose }) {
       // Members are view-only; only owners/leaders reach this call.
       // RLS (tasks_update_owner) is the final authority.
       if (!isPrivileged) {
-        throw new Error('Only the workspace owner can update tasks.');
+        throw new Error('Only the workspace owner, admin, or leader can update tasks.');
       }
       await updateTask(task.id, form);
     } catch (err) {
@@ -216,7 +216,7 @@ export default function TaskDetailModal({ open, task, onClose }) {
                     onClick={() => set('status', s.key)}
                     disabled={!isPrivileged}
                     aria-disabled={!isPrivileged}
-                    title={isPrivileged ? undefined : 'Only the workspace owner can update status'}
+                    title={isPrivileged ? undefined : 'Only the workspace owner, admin, or leader can update status'}
                   >
                     {s.label}
                   </button>

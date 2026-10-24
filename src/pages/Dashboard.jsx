@@ -9,7 +9,7 @@ import {
   IconUsers, IconTask, IconFile, IconClock,
   IconVibe, IconSparkles
 } from '../components/icons';
-import { formatBytes, formatRelative } from '../utils/format';
+import { formatBytes, formatRelative, isOnline } from '../utils/format';
 import './Dashboard.css';
 
 // activity_log columns: id, workspace_id, user_id, type, title, sub, created_at
@@ -52,7 +52,9 @@ function dueLabel(dateStr) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { state, members, tasks, files, activity } = useWorkspace();
+  const { state, members, tasks, files, activity, role, checkOverdueTasks } = useWorkspace();
+  const actorRole = String(role || 'member').toLowerCase();
+  const canManageTasks = actorRole === 'owner' || actorRole === 'admin' || actorRole === 'leader';
   const [loading, setLoading] = useState(true);
 
   // Real activity_log rows already fetched by the workspace context, mapped to
@@ -60,9 +62,25 @@ export default function Dashboard() {
   const activities = (activity || []).map(mapActivity);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(t);
-  }, []);
+    let cancelled = false;
+    async function run() {
+      const t = setTimeout(() => {
+        if (!cancelled) setLoading(false);
+      }, 500);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      clearTimeout(t);
+      if (cancelled) return;
+      // Run the overdue check after the dashboard is loaded.
+      // This is idempotent and safe to call repeatedly.
+      try {
+        await checkOverdueTasks();
+      } catch (err) {
+        console.error('[dashboard] overdue check failed:', err);
+      }
+    }
+    run();
+    return () => { cancelled = true; };
+  }, [checkOverdueTasks]);
 
   if (state === 'empty' && files.length === 0 && members.length === 0) {
     return (
@@ -74,9 +92,11 @@ export default function Dashboard() {
           Once a task is assigned or work is added, you&apos;ll see everything here — from files
           and team activity to deadlines and progress.
         </p>
-        <Button variant="primary" size="lg" onClick={() => navigate('/tasks/new/manual')}>
-          Create Your First Task
-        </Button>
+        {canManageTasks && (
+          <Button variant="primary" size="lg" onClick={() => navigate('/tasks/new/manual')}>
+            Create Your First Task
+          </Button>
+        )}
       </div>
     );
   }
@@ -191,9 +211,11 @@ export default function Dashboard() {
                 <p className="empty-body" style={{ margin: '6px auto 16px' }}>
                   Deadlines will appear here once tasks are scheduled.
                 </p>
-                <Button variant="primary" onClick={() => navigate('/tasks/new/manual')}>
-                  Create Task
-                </Button>
+                {canManageTasks && (
+                  <Button variant="primary" onClick={() => navigate('/tasks/new/manual')}>
+                    Create Task
+                  </Button>
+                )}
               </div>
             ) : (
               <ul className="deadlines-list">
@@ -314,19 +336,24 @@ export default function Dashboard() {
               </p>
             ) : (
               <ul className="mini-list">
-                {members.slice(0, 4).map(member => (
-                  <li key={member.id} className="mini-item">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Avatar name={member.full_name} size="sm" />
-                      <div>
-                        <div className="mini-item-title">{member.full_name}</div>
-                        <div className="muted" style={{ fontSize: 12.5, marginTop: 3 }}>
-                          {member.role} · {member.status}
+                {members.slice(0, 4).map(member => {
+                  const online = isOnline(member.last_active_at);
+                  return (
+                    <li key={member.id} className="mini-item">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Avatar name={member.full_name} size="sm" />
+                        <div>
+                          <div className="mini-item-title">{member.full_name}</div>
+                          <div className="muted" style={{ fontSize: 12.5, marginTop: 3 }}>
+                            <span className={`dot ${online ? 'dot-active' : 'dot-inactive'}`} style={{ marginRight: 4 }} />
+                            {online ? 'Online' : formatRelative(member.last_active_at) || 'Offline'}
+                            {' · '}{member.role} · {member.status}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>

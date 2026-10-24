@@ -41,13 +41,7 @@ export default function Login() {
       }
 
       push('Signed in', 'success');
-      let hasPlanSelection = false;
-      try {
-        hasPlanSelection = !!sessionStorage.getItem('synctask:selectedPlan');
-      } catch {
-        // Continue with the normal post-login route if browser storage is unavailable.
-      }
-      navigate(hasPlanSelection ? '/plans' : '/dashboard');
+      navigate('/dashboard');
     } catch (error) {
       console.error('[login] sign in failed:', describeSupabaseError(error), error);
       setErrors({ password: describeSupabaseError(error) });
